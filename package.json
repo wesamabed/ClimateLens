@@ -1,0 +1,39 @@
+{
+  "name": "climatelens",
+  "version": "1.0.0",
+  "description": "AI-powered climate data explorer using MongoDB Atlas Vector Search + Google Vertex AI",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"npm run server:start\" \"npm run client:start\"",
+    "build": "npm run build --prefix server && npm run build --prefix client",
+    "server:start": "cross-env NODE_ENV=dev ts-node-dev --respawn --transpile-only --project server/tsconfig.json server/src/index.ts",
+    "client:start": "npm run dev --prefix client",
+    "lint": "eslint \"{server,client}/**/*.{ts,tsx}\" --max-warnings=0",
+    "tsc": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wesamabed/ClimateLens.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wesamabed/ClimateLens/issues"
+  },
+  "homepage": "https://github.com/wesamabed/ClimateLens#readme",
+  "private": "true",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "eslint": "^9.26.0",
+    "prettier": "^3.5.3"
+  }
+}
