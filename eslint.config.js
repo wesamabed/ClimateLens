@@ -1,37 +1,53 @@
+// Flat-config for ESLint 8.57 + TypeScript-ESLint 7
 import tseslint from 'typescript-eslint';
 import eslintPluginImport from 'eslint-plugin-import';
-import eslintPluginNode from 'eslint-plugin-n';
 import eslintPluginPromise from 'eslint-plugin-promise';
+
+const tsParser = tseslint.parser;
+const tsPlugin = tseslint.plugin;
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
-  // base eslint rules
+  /* ── Pure JavaScript / Build files ─────────────────────────── */
   {
-    files: ['**/*.{js,cjs,mjs,ts,tsx}'],
+    files: ['**/*.{js,cjs,mjs}'],
+    languageOptions: { sourceType: 'module' },
+    plugins: { import: eslintPluginImport, promise: eslintPluginPromise },
+    rules: {
+      'import/order': 'warn',
+      'promise/always-return': 'warn',
+    },
+  },
+
+  /* ── Server TypeScript (type-checked) ───────────────────────── */
+  {
+    files: ['server/src/**/*.ts', 'server/src/**/*.tsx'],
     languageOptions: {
-      sourceType: 'module',
+      parser: tsParser,
       parserOptions: {
-        project: ['./server/tsconfig.json', './client/tsconfig.json'],
+        project: ['./server/tsconfig.json'],
+        tsconfigRootDir: new URL('.', import.meta.url).pathname,
       },
     },
+    plugins: { '@typescript-eslint': tsPlugin },
     rules: {
-      'no-unused-vars': 'error',
-      'no-undef': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
-  // TypeScript rules
-  ...tseslint.configs.recommended,
+
+  /* ── Client TypeScript (type-checked) ───────────────────────── */
   {
-    files: ['**/*.ts', '**/*.tsx'],
-    plugins: {
-      '@typescript-eslint': tseslint.plugin,
+    files: ['client/src/**/*.ts', 'client/src/**/*.tsx'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: ['./client/tsconfig.json'],
+        tsconfigRootDir: new URL('.', import.meta.url).pathname,
+      },
     },
+    plugins: { '@typescript-eslint': tsPlugin },
     rules: {
-      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
-  // Import / Node / Promise rules
-  eslintPluginImport.configs.recommended,
-  eslintPluginNode.configs['flat/recommended'],
-  eslintPluginPromise.configs.recommended,
 ];

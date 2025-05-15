@@ -1,6 +1,7 @@
 {
   "name": "climatelens",
   "version": "1.0.0",
+  "type": "module",
   "description": "AI-powered climate data explorer using MongoDB Atlas Vector Search + Google Vertex AI",
   "main": "index.js",
   "scripts": {
@@ -36,10 +37,10 @@
     "@typescript-eslint/parser": "^7.18.0",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
-    "eslint": "^9.26.0",
+    "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-n": "^17.18.0",
-    "eslint-plugin-promise": "^7.2.1",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.6.0",
     "mongodb-shell": "^1.0.1",
     "prettier": "^3.5.3"
   },
