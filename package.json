@@ -8,7 +8,7 @@
     "server:start": "cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only --project server/tsconfig.json server/src/bootstrap.ts",
     "client:start": "npm run dev --prefix client",
     "build": "npm run build --prefix server && npm run build --prefix client",
-    "lint": "eslint \"{server,client}/**/*.{ts,tsx}\" --max-warnings=0",
+    "lint": "eslint \"{server,client}/**/*.{ts,tsx,js,cjs,mjs}\" --max-warnings=0",
     "tsc": "tsc --noEmit"
   },
   "repository": {
@@ -32,11 +32,14 @@
     "@types/cors": "^2.8.18",
     "@types/morgan": "^1.9.9",
     "@types/pino": "^7.0.4",
-    "@typescript-eslint/eslint-plugin": "^8.32.1",
-    "@typescript-eslint/parser": "^8.32.1",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "eslint": "^9.26.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-n": "^17.18.0",
+    "eslint-plugin-promise": "^7.2.1",
     "mongodb-shell": "^1.0.1",
     "prettier": "^3.5.3"
   },
