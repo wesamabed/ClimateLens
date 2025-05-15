@@ -4,11 +4,10 @@
   "description": "AI-powered climate data explorer using MongoDB Atlas Vector Search + Google Vertex AI",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently \"npm run server:start\" \"npm run client:start\"",
-    "build": "npm run build --prefix server && npm run build --prefix client",
-    "server:start": "cross-env NODE_ENV=dev ts-node-dev --respawn --transpile-only --project server/tsconfig.json server/src/index.ts",
+    "server:start": "cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only --project server/tsconfig.json server/src/bootstrap.ts",
     "client:start": "npm run dev --prefix client",
+    "build": "npm run build --prefix server && npm run build --prefix client",
     "lint": "eslint \"{server,client}/**/*.{ts,tsx}\" --max-warnings=0",
     "tsc": "tsc --noEmit"
   },
@@ -29,11 +28,25 @@
     "server"
   ],
   "devDependencies": {
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.18",
+    "@types/morgan": "^1.9.9",
+    "@types/pino": "^7.0.4",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "eslint": "^9.26.0",
+    "mongodb-shell": "^1.0.1",
     "prettier": "^3.5.3"
+  },
+  "dependencies": {
+    "@types/helmet": "^0.0.48",
+    "compression": "^1.8.0",
+    "dotenv": "^16.5.0",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.0",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0"
   }
 }
