@@ -41,7 +41,7 @@ jobs:
           pip install -r etl/requirements.txt
 
       - name: Ruff lint (ETL)
-        run: ruff etl
+        run: ruff check etl
 
       - name: Pip check
         run: python -m pip check
