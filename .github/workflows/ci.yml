@@ -46,6 +46,15 @@ jobs:
       - name: Pip check
         run: python -m pip check
 
+      - name: Prepare dummy server/.env for ETL
+        run: |
+          mkdir -p server
+          cat > server/.env << 'EOF'
+          MONGODB_URI=mongodb://dry-run-placeholder
+          DATA_DIR=data/gsod
+          CHUNK_SIZE=1000
+          EOF
+
       - name: ETL dry-run smoke test
         run: python -m etl.main --dry-run --uri mongodb://dry-run-placeholder
       
