@@ -47,7 +47,7 @@ jobs:
         run: python -m pip check
 
       - name: ETL dry-run smoke test
-        run: python -m etl.main --dry-run
+        run: python -m etl.main --dry-run --uri mongodb://dry-run-placeholder
       
 
       
