@@ -1,0 +1,13 @@
+# ETL requirements 
+
+requests>=2.32.0,<3               # HTTP client
+tqdm>=4.67.0,<5                   # Progress bars
+pandas>=2.2.0,<3                  # Dataframes & CSV parsing
+pymongo>=4.13.0,<5                # Mongo driver
+dnspython>=1.16.0,<3              # required for SRV connection strings
+python-dotenv>=1.1.0,<2          # .env loader
+pydantic>=2.11.0,<3               # settings validation
+pydantic-settings>=2.9.0,<3      # BaseSettings (v2)
+pytest>=8.0.0,<9                  # test runner
+ruff>=0.11.0,<1                   # Python linter
+typer>=0.10.0,<1                  # CLI framework
