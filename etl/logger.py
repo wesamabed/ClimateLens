@@ -1,8 +1,12 @@
+# etl/logger.py
 import logging
 
 def get_logger(name: str = __name__, level: str = "INFO") -> logging.Logger:
     """
-    Adapter for structured, leveled logging
+    Adapter Pattern:
+    Centralizes logger configuration:
+      • Single place to tweak format/handlers.
+      • Consistent structured logs across modules.
     """
     logger = logging.getLogger(name)
     if not logger.handlers:

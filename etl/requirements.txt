@@ -2,6 +2,7 @@
 
 requests>=2.32.0,<3               # HTTP client
 tqdm>=4.67.0,<5                   # Progress bars
+tenacity>=8.0.0,<9                # Retry logic for downloads
 pandas>=2.2.0,<3                  # Dataframes & CSV parsing
 pymongo>=4.13.0,<5                # Mongo driver
 dnspython>=1.16.0,<3              # required for SRV connection strings
