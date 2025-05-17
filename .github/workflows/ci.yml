@@ -46,6 +46,9 @@ jobs:
       - name: Pip check
         run: python -m pip check
 
+      - name: Run Python tests
+        run: pytest etl/tests --maxfail=1 --disable-warnings -q
+
       - name: Prepare dummy server/.env for ETL
         run: |
           mkdir -p server
