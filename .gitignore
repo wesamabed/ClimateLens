@@ -142,3 +142,18 @@ etl/*.pyc
 .venv/                    
 data/                     
 
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyd
+# Virtualenv
+.venv/
+# ETL data output
+data/
+# Ruff / pytest caches
+htmlcov/
+.coverage
+.pytest_cache/
+# Editor
+.vscode/
+.idea/
