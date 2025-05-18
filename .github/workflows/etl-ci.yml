@@ -38,6 +38,7 @@ jobs:
           MONGODB_URI=mongodb://dry-run-placeholder
           DATA_DIR=data/gsod
           CHUNK_SIZE=1000
+          DB_NAME=test_db
           EOF
 
       - name: Run unit tests
@@ -50,4 +51,5 @@ jobs:
             --uri mongodb://dry-run-placeholder \
             --db-name test_db \
             --start-year 2010 \
-            --end-year 2010
+            --end-year 2010 \
+            --db-name test_db 
