@@ -157,6 +157,54 @@ Commit with clear messages and PR against main.
 
 Ensure CI passes (lint, type-checks, ETL smoke test).
 
+## Python ETL Pipeline
+
+Under `etl/` you’ll find a configurable, production-grade ETL that:
+
+1. **Downloads** NOAA GSOD `.tar` archives via FTP  
+2. **Extracts** the daily `.op.gz` files  
+3. **Transforms** them into clean JSON documents using Pydantic + unit-conversion  
+4. **Loads** them in batches into MongoDB
+
+### Prerequisites
+
+- Python 3.9+  
+- A MongoDB URI in `server/.env` (or pass `--uri` on the CLI)
+
+```bash
+# from repo root
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r etl/requirements.txt
+
+
+# Dry-run (download & transform only):
+python -m etl.main \
+  --start-year 2000 \
+  --end-year   2001 \
+  --dry-run
+
+# Full run (load into MongoDB):
+python -m etl.main \
+  --start-year 2010 \
+  --end-year   2015 \
+  --uri        "$MONGODB_URI" \
+  --log-level  DEBUG
+
+
+etl/
+├── config.py        # Pydantic settings loader
+├── logger.py        # Standardized logger factory
+├── downloader/      # FTPDownloader + TarExtractor
+├── transformer/     # Fixed‐width parser → Pydantic models
+├── loader/          # BatchLoader → MongoRepository
+├── pipeline/        # Orchestrates Download → Transform → Load
+├── main.py          # CLI entry point
+└── requirements.txt
+
+
+
+
 License
 
 MIT

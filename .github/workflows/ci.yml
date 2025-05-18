@@ -59,7 +59,7 @@ jobs:
         run: pytest etl/tests --maxfail=1 --disable-warnings -q
 
       - name: ETL dry-run smoke test
-        run: python -m etl.main --dry-run --uri mongodb://dry-run-placeholder
+        run: python -m etl.main --dry-run --uri mongodb://dry-run-placeholder --db-name test_db --start-year 2020 --end-year 2020 
       
 
       

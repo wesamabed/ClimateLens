@@ -167,3 +167,6 @@ __pycache__/
 *.pytest_cache/
 htmlcov/
 .coverage
+
+# macOS Finder metadata
+.DS_Store
