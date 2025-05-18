@@ -1,4 +1,8 @@
-[![CI](https://github.com/your-org/ClimateLens/actions/workflows/etl-ci.yml/badge.svg)](https://github.com/your-org/ClimateLens/actions/workflows/etl-ci.yml) [![Coverage](https://img.shields.io/codecov/c/github/your-org/ClimateLens)](https://codecov.io/gh/your-org/ClimateLens) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![ETL CI](https://github.com/wesamabed/ClimateLens/actions/workflows/etl-ci.yml/badge.svg)](https://github.com/wesamabed/ClimateLens/actions/workflows/etl-ci.yml)
+[![Lint & Type-check](https://github.com/wesamabed/ClimateLens/actions/workflows/ci.yml/badge.svg)](https://github.com/wesamabed/ClimateLens/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/codecov/c/github/wesamabed/ClimateLens)](https://codecov.io/gh/wesamabed/ClimateLens)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 
 # ClimateLens
 
@@ -36,7 +40,7 @@
 ## Prerequisites
 
 - **Node.js** ≥ v18 & **npm**  
-- **Python** ≥ 3.11  
+- **Python** ≥ 3.9  
 - **MongoDB Atlas** cluster & connection URI  
 
 ---
