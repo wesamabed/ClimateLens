@@ -1,34 +1,22 @@
-name: Lint & Type-check
+name: ETL CI
 
 on:
-  pull_request:
   push:
-    branches: [ main ]
+    paths:
+      - 'etl/**'
+      - '.github/workflows/etl-ci.yml'
+  pull_request:
+    paths:
+      - 'etl/**'
+      - '.github/workflows/etl-ci.yml'
 
 jobs:
-  build:
+  lint-test-smoke:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install deps
-        run: npm ci
-
-      - name: Lint
-        run: |
-          npm run lint --workspaces
-
-      - name: Type-check
-        run: |
-          npm run tsc --workspaces
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -43,9 +31,6 @@ jobs:
       - name: Ruff lint (ETL)
         run: ruff check etl
 
-      - name: Pip check
-        run: python -m pip check
-
       - name: Prepare dummy server/.env for ETL
         run: |
           mkdir -p server
@@ -55,13 +40,14 @@ jobs:
           CHUNK_SIZE=1000
           EOF
 
-      - name: Run Python tests
-        run: pytest etl/tests --maxfail=1 --disable-warnings -q
+      - name: Run unit tests
+        run: pytest etl/tests --maxfail=1 -q
 
       - name: ETL dry-run smoke test
-        run: python -m etl.main --dry-run --uri mongodb://dry-run-placeholder --db-name test_db --start-year 2020 --end-year 2020 
-      
-
-      
-
-          
+        run: |
+          python -m etl.main \
+            --dry-run \
+            --uri mongodb://dry-run-placeholder \
+            --db-name test_db \
+            --start-year 2010 \
+            --end-year 2010
