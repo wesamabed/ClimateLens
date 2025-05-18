@@ -96,3 +96,6 @@ pids/
 *.pid
 *.seed
 *.pid.lock
+
+# Ruff cache
+.ruff_cache/

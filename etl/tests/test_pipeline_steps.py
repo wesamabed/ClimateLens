@@ -1,7 +1,6 @@
 # etl/tests/test_pipeline_steps.py
 import logging
 import pytest
-from pathlib import Path
 from etl.pipeline.download_step import DownloadStep
 from etl.pipeline.transform_step import TransformStep
 from etl.pipeline.load_step import LoadStep

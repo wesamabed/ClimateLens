@@ -43,6 +43,7 @@ def main():
         ftp_max_workers=args.ftp_max_workers,
     )
 
+    # The repo and years filtering logic
     repo = MongoRepository(cfg, logger)
     all_years   = list(range(cfg.START_YEAR, cfg.END_YEAR + 1))
     already     = [y for y in all_years if repo.count_for_year(y) > 0]
@@ -66,14 +67,13 @@ def main():
     )
     extractor = TarExtractor(logger)
     download_step = DownloadStep(cfg, ftp, extractor, logger)
-    op_files = download_step.execute(years=to_process)
 
-    # 4) transform
     transformer  = ConcurrentTransformer(max_workers=cfg.FTP_MAX_WORKERS, logger=logger)
     transform_step = TransformStep(cfg, transformer, logger)
-    records = transform_step.execute(op_files)
 
-    # 5) optionally load
+    steps = [download_step, transform_step]
+
+    # Optionally include the load step if not a dry run.
     if not args.dry_run:
         preparer = DefaultRecordPreparer(logger)
         loader   = BatchLoader(
@@ -84,7 +84,11 @@ def main():
             logger=logger,
         )
         load_step = LoadStep(cfg, loader, logger)
-        load_step.execute(records)
+        steps.append(load_step)
+
+    # Create and run the pipeline with 'to_process' as the initial input.
+    pipeline = Pipeline(steps)
+    pipeline.run(initial_input=to_process)
 
     logger.info("ETL run complete")
 
