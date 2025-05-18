@@ -43,11 +43,17 @@ def main():
         ftp_max_workers=args.ftp_max_workers,
     )
 
-    # The repo and years filtering logic
-    repo = MongoRepository(cfg, logger)
     all_years   = list(range(cfg.START_YEAR, cfg.END_YEAR + 1))
-    already     = [y for y in all_years if repo.count_for_year(y) > 0]
-    to_process  = [y for y in all_years if y not in already]
+
+    if args.dry_run:
+        # In dry-run mode we never touch Mongo—just process everything
+        logger.info("Dry run: skipping DB count check")
+        already    = []
+        to_process = all_years
+    else:
+        repo       = MongoRepository(cfg, logger)
+        already    = [y for y in all_years if repo.count_for_year(y) > 0]
+        to_process = [y for y in all_years if y not in already]
 
     logger.info(f"Skipping already-loaded years: {already}")
     logger.info(f"Will process years: {to_process}")
