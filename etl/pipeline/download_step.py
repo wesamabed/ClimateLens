@@ -1,6 +1,6 @@
 # etl/pipeline/download_step.py
 from pathlib import Path
-from typing import List
+from typing import List, Iterable, Optional
 import logging
 
 from etl.config import ETLConfig
@@ -21,9 +21,12 @@ class DownloadStep(Step[None, List[Path]]):
         self.extractor  = extractor
         self.logger     = logger.getChild(self.__class__.__name__)
 
-    def execute(self, _: None = None) -> List[Path]:
-        years = range(self.config.START_YEAR, self.config.END_YEAR + 1)
-        self.logger.info(f"Downloading years {self.config.START_YEAR}–{self.config.END_YEAR}")
+    def execute(self, years: Optional[Iterable[int]] = None) -> List[Path]:
+        # if no explicit years list provided, use the full config range
+        if years is None:
+            years = range(self.config.START_YEAR, self.config.END_YEAR + 1)
+        years = list(years)
+        self.logger.info(f"Downloading years {years}")
         
         raw_dir = self.config.DATA_DIR / "raw"
         raw_dir.mkdir(parents=True, exist_ok=True)

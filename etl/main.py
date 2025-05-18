@@ -43,28 +43,50 @@ def main():
         ftp_max_workers=args.ftp_max_workers,
     )
 
+    repo = MongoRepository(cfg, logger)
+    all_years   = list(range(cfg.START_YEAR, cfg.END_YEAR + 1))
+    already     = [y for y in all_years if repo.count_for_year(y) > 0]
+    to_process  = [y for y in all_years if y not in already]
+
+    logger.info(f"Skipping already-loaded years: {already}")
+    logger.info(f"Will process years: {to_process}")
+
+    if not to_process:
+        logger.info("Nothing to do; all requested years are already ingested.")
+        return
+
     # Initialize dependencies for each step.
-    downloader = FTPDownloader(host = cfg.FTP_HOST,user = cfg.FTP_USER,
-                               passwd = cfg.FTP_PASS,retry_attempts = cfg.FTP_RETRY_ATTEMPTS,
-                               retry_wait = cfg.FTP_RETRY_WAIT,logger = logger,)
-    extractor   = TarExtractor(logger)
-    transformer = ConcurrentTransformer(max_workers=cfg.FTP_MAX_WORKERS, logger=logger,)
-    preparer   = DefaultRecordPreparer(logger)
-    repository = MongoRepository(cfg, logger)
-    loader     = BatchLoader(preparer=preparer,repository=repository,batch_size=cfg.CHUNK_SIZE,max_workers=cfg.FTP_MAX_WORKERS,logger=logger,)
+    ftp = FTPDownloader(
+        host=cfg.FTP_HOST,
+        user=cfg.FTP_USER,
+        passwd=cfg.FTP_PASS,
+        retry_attempts=cfg.FTP_RETRY_ATTEMPTS,
+        retry_wait=cfg.FTP_RETRY_WAIT,
+        logger=logger,
+    )
+    extractor = TarExtractor(logger)
+    download_step = DownloadStep(cfg, ftp, extractor, logger)
+    op_files = download_step.execute(years=to_process)
 
-    # Build the pipeline steps based on the new pipeline structure.
-    steps = [
-        DownloadStep(cfg, downloader, extractor, logger),
-        TransformStep(cfg, transformer, logger),
-    ]
-    
-    # Only add the LoadStep if not in dry-run mode.
+    # 4) transform
+    transformer  = ConcurrentTransformer(max_workers=cfg.FTP_MAX_WORKERS, logger=logger)
+    transform_step = TransformStep(cfg, transformer, logger)
+    records = transform_step.execute(op_files)
+
+    # 5) optionally load
     if not args.dry_run:
-        steps.append( LoadStep(cfg, loader, logger) )
+        preparer = DefaultRecordPreparer(logger)
+        loader   = BatchLoader(
+            preparer=preparer,
+            repository=repo,
+            batch_size=cfg.CHUNK_SIZE,
+            max_workers=cfg.FTP_MAX_WORKERS,
+            logger=logger,
+        )
+        load_step = LoadStep(cfg, loader, logger)
+        load_step.execute(records)
 
-    pipeline = Pipeline(steps)
-    pipeline.run()
+    logger.info("ETL run complete")
 
 if __name__ == "__main__":
     main()
