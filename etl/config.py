@@ -1,8 +1,9 @@
 from pathlib import Path
+import os
 from datetime import datetime
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, PositiveInt
+from pydantic import Field, PositiveInt, field_validator
 from typing import Optional, Dict
 
 # ─── single source‐of‐truth .env loader ─────────────────────────────
@@ -51,6 +52,12 @@ class ETLConfig(BaseSettings):
     FTP_RETRY_WAIT:      PositiveInt = Field(default=5, ge=0)
     FTP_MAX_WORKERS:     PositiveInt = Field(default=4, ge=1)
 
+    @field_validator("MONGODB_URI")
+    def validate_uri(cls, v):
+        if not (v.startswith("mongodb://") or v.startswith("mongodb+srv://")):
+            raise ValueError("Invalid MONGODB_URI")
+        return v
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # sanity checks
@@ -93,4 +100,12 @@ def get_config(
     if ftp_max_workers is not None:
         overrides["FTP_MAX_WORKERS"] = ftp_max_workers
 
-    return ETLConfig(**overrides)
+    env_path = os.environ.get("ETL_ENV_PATH")
+    if env_path:
+        from dotenv import load_dotenv
+        load_dotenv(dotenv_path=env_path, override=True)
+
+    try:
+        return ETLConfig(**overrides)
+    except Exception as e:
+        raise ValueError(e)
