@@ -57,7 +57,7 @@ This repo houses the **Python ETL** and project-wide CI/CD & docs.
 
 | Layer         | Technology                                          |
 | ------------- | --------------------------------------------------- |
-| **ETL**       | Python 3.11, Pydantic, Tenacity, concurrent.futures |
+| **ETL**       | Python 3.9, Pydantic, Tenacity, concurrent.futures |
 | **Database**  | MongoDB Atlas (Vector Search + standard indexes)    |
 | **AI/ML**     | Google Vertex AI                                    |
 | **Backend**   | Node.js, TypeScript, Express                        |
@@ -85,70 +85,75 @@ This repo houses the **Python ETL** and project-wide CI/CD & docs.
 │   └── requirements.txt   # Python dependencies
 ├── .gitignore             # Excludes local, build, data, caches
 └── README.md              # This file
-🔧 Prerequisites
+```
+---
+## 🔧 Prerequisites
+
 Node.js ≥ v18 & npm (for backend)
 
 Python ≥ 3.11 (for ETL)
 
 MongoDB Atlas cluster & connection URI
 
-Tip: you can store your ETL settings (e.g. MONGODB_URI, DB_NAME) in server/.env, or simply pass them via CLI flags.
+Tip: you can store your ETL settings (e.g. `MONGODB_URI`, `DB_NAME`) in `server/.env`, or simply pass them via CLI flags.
+
 🏗️ Setup & Installation
-1. Node.js Backend
-cd server
-npm install
-cp .env.example .env      # fill in MONGODB_URI, PORT, etc.
-npm run dev
-2. Python ETL Pipeline
-# From project root
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install -r etl/requirements.txt
-Ensure your Mongo URI & settings live in server/.env or pass via CLI.
+
+1. **Node.js Backend**  
+    cd server  
+    npm install  
+    cp .env.example .env      # fill in MONGODB_URI, PORT, etc.  
+    npm run dev  
+
+2. **Python ETL Pipeline**  
+    # From project root  
+    python3 -m venv .venv  
+    source .venv/bin/activate  
+    pip install --upgrade pip  
+    pip install -r etl/requirements.txt  
+
+Ensure your Mongo URI & settings live in `server/.env` or pass via CLI.
 
 🎬 Usage
-Running the Backend
-cd server
-npm run dev
-# API available at http://localhost:<PORT>
-Running the ETL
-# Dry-run (download + transform only)
-python -m etl.main \
-  --start-year 2000 \
-  --end-year   2001 \
-  --dry-run
 
-# Full run (load into MongoDB)
-python -m etl.main \
-  --start-year 1980 \
-  --end-year   2023 \
-  --uri        "$MONGODB_URI" \
-  --db-name    "$DB_NAME" \
-  --log-level  DEBUG
-The pipeline will:
+- **Running the Backend**  
+    cd server  
+    npm run dev  
+    # API available at http://localhost:<PORT>  
 
-Skip any year already ingested
+- **Running the ETL**  
+    # Dry-run (download + transform only)  
+    python -m etl.main \
+      --start-year 2000 \
+      --end-year   2001 \
+      --dry-run  
 
-Download .tar archives via FTP
+    # Full run (load into MongoDB)  
+    python -m etl.main \
+      --start-year 1980 \
+      --end-year   2023 \
+      --uri        "$MONGODB_URI" \
+      --db-name    "$DB_NAME" \
+      --log-level  DEBUG  
 
-Extract daily .op.gz files
+The pipeline will:  
+- Skip any year already ingested  
+- Download `.tar` archives via FTP  
+- Extract daily `.op.gz` files  
+- Transform to JSON with unit conversions & validation  
+- Load into MongoDB in concurrent batches  
 
-Transform to JSON with unit conversions & validation
-
-Load into MongoDB in concurrent batches
 🤝 Contributing
-We welcome any contributions!
 
-Open an issue to discuss your idea
+1. Open an issue to discuss your idea  
+2. Fork this repo & create a feature branch  
+3. Write clear, test-covered code  
+4. Submit a pull request against `main`  
+5. Make sure CI (lint, tests, dry-run) passes  
 
-Fork this repo & create a feature branch
-
-Write clear, test-covered code
-
-Submit a pull request against main
-
-Make sure CI (lint, tests, dry-run) passes
 📜 License
-This project is licensed under the MIT License.
+
+This project is licensed under the MIT License.  
 Feel free to use, modify, and distribute!
+
+---
