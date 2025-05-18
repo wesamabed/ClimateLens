@@ -140,7 +140,8 @@ etl/.env
 etl/__pycache__/
 etl/*.pyc
 .venv/                    
-data/                     
+data/   
+etl/data/                  
 
 # Python artifacts
 __pycache__/
@@ -148,6 +149,8 @@ __pycache__/
 *.pyd
 # Virtualenv
 .venv/
+env/
+venv/
 # ETL data output
 data/
 # Ruff / pytest caches
@@ -157,3 +160,10 @@ htmlcov/
 # Editor
 .vscode/
 .idea/
+# Pydantic / pytest caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.pytest_cache/
+htmlcov/
+.coverage
