@@ -107,6 +107,7 @@ PORT=3000
 .
 ├── .github/            # GitHub Actions workflows (CI: lint, test, dry-run ETL)
 │   └── etl-ci.yml      # ETL pipeline CI configuration
+│   └── node-ci.yml     # node CI configuration
 ├── server/             # Node.js backend (TypeScript)
 ├── client/             # React frontend application
 ├── etl/                # Python ETL pipeline
