@@ -1,0 +1,54 @@
+name: ETL CI
+
+on:
+  push:
+    paths:
+      - 'etl/**'
+      - '.github/workflows/etl-ci.yml'
+  pull_request:
+    paths:
+      - 'etl/**'
+      - '.github/workflows/etl-ci.yml'
+
+jobs:
+  lint-test-smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ETL dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r etl/requirements.txt
+
+      - name: Ruff lint (ETL)
+        run: ruff check etl
+
+      - name: Prepare dummy server/.env for ETL
+        run: |
+          mkdir -p server
+          cat > server/.env << 'EOF'
+          MONGODB_URI=mongodb://dry-run-placeholder
+          DATA_DIR=data/gsod
+          CHUNK_SIZE=1000
+          DB_NAME=test_db
+          EOF
+
+      - name: Run unit tests
+        run: pytest etl/tests --maxfail=1 -q
+
+      - name: ETL dry-run smoke test
+        run: |
+          python -m etl.main \
+            --dry-run \
+            --uri mongodb://dry-run-placeholder \
+            --db-name test_db \
+            --start-year 2010 \
+            --end-year 2010 
