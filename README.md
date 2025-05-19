@@ -1,6 +1,5 @@
 [![ETL CI](https://github.com/wesamabed/ClimateLens/actions/workflows/etl-ci.yml/badge.svg)](https://github.com/wesamabed/ClimateLens/actions/workflows/etl-ci.yml)
-[![Lint & Type-check](https://github.com/wesamabed/ClimateLens/actions/workflows/ci.yml/badge.svg)](https://github.com/wesamabed/ClimateLens/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/codecov/c/github/wesamabed/ClimateLens)](https://codecov.io/gh/wesamabed/ClimateLens)
+[![Node.js CI](https://github.com/wesamabed/ClimateLens/actions/workflows/node-ci.yml/badge.svg)](https://github.com/wesamabed/ClimateLens/actions/workflows/node-ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 
