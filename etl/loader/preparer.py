@@ -11,10 +11,9 @@ class DefaultRecordPreparer:
 
     def prepare(self, raw: Mapping[str, Any]) -> dict[str, Any]:
         rec = dict(raw)  # shallow copy
-        if "station_id" in rec:
-            rec["stationId"] = rec.pop("station_id")
-        for key in ("date", "record_date"):
-            d = rec.get(key)
-            if isinstance(d, date) and not isinstance(d, datetime):
-                rec[key] = datetime.combine(d, time.min)
+        if "station" in rec:
+            rec["stationId"] = rec.pop("station")
+        if "record_date" in rec and isinstance(rec["record_date"], date):
+            dt = rec.pop("record_date")
+            rec["recordDate"] = datetime.combine(dt, time.min)
         return rec

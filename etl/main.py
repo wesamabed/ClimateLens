@@ -6,7 +6,7 @@ from etl.pipeline.download_step import DownloadStep
 from etl.pipeline.transform_step import TransformStep
 from etl.pipeline.load_step import LoadStep
 
-from etl.downloader.ftp_downloader import FTPDownloader
+from etl.downloader.http_downloader import HTTPDownloader
 from etl.downloader.tar_extractor import TarExtractor
 from etl.transformer.concurrent import ConcurrentTransformer
 from etl.loader.loader import BatchLoader
@@ -21,9 +21,11 @@ def parse_args():
     parser.add_argument("--db-name",    type=str, help="override DB_NAME")
     parser.add_argument("--chunk-size", type=int, help="override batch size for loading")
     parser.add_argument("--data-dir",   type=str, help="override local data directory")
-    parser.add_argument("--ftp-retry-attempts", type=int, help="override FTP retry attempts")
-    parser.add_argument("--ftp-retry-wait",     type=int, help="override FTP retry wait seconds")
-    parser.add_argument("--ftp-max-workers",    type=int, help="override FTP maximum workers")
+    parser.add_argument("--download-base-url",       type=str, help="override download archive base URL")
+    parser.add_argument("--download-retry-attempts", type=int, help="override download retry attempts")
+    parser.add_argument("--download-retry-wait",     type=int, help="override download retry wait seconds")
+    parser.add_argument("--download-max-workers",    type=int, help="override download maximum workers")
+    parser.add_argument("--load-max-workers",    type=int, help="override load maximum workers")
     parser.add_argument("--log-level",  default="INFO", help="logging level")
     parser.add_argument("--dry-run", action="store_true", help="skip DB load")
     return parser.parse_args()
@@ -38,9 +40,12 @@ def main():
         db_name=args.db_name,
         data_dir=args.data_dir,
         chunk_size=args.chunk_size,
-        ftp_retry_attempts=args.ftp_retry_attempts,
-        ftp_retry_wait=args.ftp_retry_wait,
-        ftp_max_workers=args.ftp_max_workers,
+        download_base_url=args.download_base_url,
+        download_retry_attempts=args.download_retry_attempts,
+        download_retry_wait=args.download_retry_wait,
+        download_max_workers=args.download_max_workers,
+        load_max_workers=args.load_max_workers,
+
     )
 
     all_years   = list(range(cfg.START_YEAR, cfg.END_YEAR + 1))
@@ -63,18 +68,16 @@ def main():
         return
 
     # Initialize dependencies for each step.
-    ftp = FTPDownloader(
-        host=cfg.FTP_HOST,
-        user=cfg.FTP_USER,
-        passwd=cfg.FTP_PASS,
-        retry_attempts=cfg.FTP_RETRY_ATTEMPTS,
-        retry_wait=cfg.FTP_RETRY_WAIT,
+    downloader = HTTPDownloader(
+        base_url=cfg.DOWNLOAD_BASE_URL,
+        retry_attempts=cfg.DOWNLOAD_RETRY_ATTEMPTS,
+        retry_wait=cfg.DOWNLOAD_RETRY_WAIT,
         logger=logger,
     )
     extractor = TarExtractor(logger)
-    download_step = DownloadStep(cfg, ftp, extractor, logger)
+    download_step = DownloadStep(cfg, downloader, extractor, logger)
 
-    transformer  = ConcurrentTransformer(max_workers=cfg.FTP_MAX_WORKERS, logger=logger)
+    transformer  = ConcurrentTransformer(max_workers=cfg.DOWNLOAD_MAX_WORKERS, logger=logger)
     transform_step = TransformStep(cfg, transformer, logger)
 
     steps = [download_step, transform_step]
@@ -86,7 +89,7 @@ def main():
             preparer=preparer,
             repository=repo,
             batch_size=cfg.CHUNK_SIZE,
-            max_workers=cfg.FTP_MAX_WORKERS,
+            max_workers=cfg.LOAD_MAX_WORKERS,
             logger=logger,
         )
         load_step = LoadStep(cfg, loader, logger)

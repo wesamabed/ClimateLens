@@ -44,13 +44,15 @@ class ETLConfig(BaseSettings):
         description="Latest GSOD year to fetch"
     )
 
-    # FTP downloader settings
-    FTP_HOST:            str         = Field(default="ftp.ncei.noaa.gov")
-    FTP_USER:            str         = Field(default="anonymous")
-    FTP_PASS:            str         = Field(default="")
-    FTP_RETRY_ATTEMPTS:  PositiveInt = Field(default=3, ge=1)
-    FTP_RETRY_WAIT:      PositiveInt = Field(default=5, ge=0)
-    FTP_MAX_WORKERS:     PositiveInt = Field(default=4, ge=1)
+    # HTTP downloader settings
+    DOWNLOAD_BASE_URL:   str         = Field(default="https://www.ncei.noaa.gov/data/global-summary-of-the-day/archive")
+    DOWNLOAD_RETRY_ATTEMPTS:  PositiveInt = Field(default=3, ge=1)
+    DOWNLOAD_RETRY_WAIT:      PositiveInt = Field(default=5, ge=0)
+    DOWNLOAD_MAX_WORKERS:     PositiveInt = Field(default=4, ge=1)
+
+    # LOADER SETTINGS
+    LOAD_MAX_WORKERS: PositiveInt = Field(default=4, ge=1, description="Max threads for DB load")
+
 
     @field_validator("MONGODB_URI")
     def validate_uri(cls, v):
@@ -73,9 +75,12 @@ def get_config(
     db_name: Optional[str] = None,
     data_dir: Optional[str] = None,
     chunk_size: Optional[int] = None,
-    ftp_retry_attempts: Optional[int] = None,
-    ftp_retry_wait: Optional[int] = None,
-    ftp_max_workers: Optional[int] = None,
+    download_base_url: Optional[str]       = None,
+    download_retry_attempts: Optional[int] = None,
+    download_retry_wait: Optional[int] = None,
+    download_max_workers: Optional[int] = None,
+    load_max_workers: Optional[int] = None,
+
 ) -> ETLConfig:
     """
     Build and return an ETLConfig, applying any CLI overrides.
@@ -93,12 +98,16 @@ def get_config(
         overrides["DATA_DIR"] = Path(data_dir)
     if chunk_size is not None:
         overrides["CHUNK_SIZE"] = chunk_size
-    if ftp_retry_attempts is not None:
-        overrides["FTP_RETRY_ATTEMPTS"] = ftp_retry_attempts
-    if ftp_retry_wait is not None:
-        overrides["FTP_RETRY_WAIT"] = ftp_retry_wait
-    if ftp_max_workers is not None:
-        overrides["FTP_MAX_WORKERS"] = ftp_max_workers
+    if download_base_url is not None:
+        overrides["DOWNLOAD_BASE_URL"] = download_base_url
+    if download_retry_attempts is not None:
+        overrides["DOWNLOAD_RETRY_ATTEMPTS"] = download_retry_attempts
+    if download_retry_wait is not None:
+        overrides["DOWNLOAD_RETRY_WAIT"] = download_retry_wait
+    if download_max_workers is not None:
+        overrides["DOWNLOAD_MAX_WORKERS"] = download_max_workers
+    if load_max_workers is not None:
+        overrides["LOAD_MAX_WORKERS"] = load_max_workers
 
     env_path = os.environ.get("ETL_ENV_PATH")
     if env_path:

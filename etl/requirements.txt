@@ -13,4 +13,6 @@ pytest>=8.0.0,<9                  # test runner
 ruff>=0.11.0,<1                   # Python linter
 typer>=0.10.0,<1                  # CLI framework
 mongomock>=4.3.0,<5
+urllib3<2.0
+
 

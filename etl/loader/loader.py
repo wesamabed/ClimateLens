@@ -42,7 +42,7 @@ class BatchLoader(Loader):
         ]
         self.logger.info(f"Loading {total} docs in {len(batches)} batches")
 
-        with ThreadPoolExecutor(max_workers=self.max_workers) as exe:
+        with ThreadPoolExecutor(max_workers=self.max_workers, thread_name_prefix="batch-loader") as exe:
             futures = {
                 exe.submit(self._load_with_retry, idx + 1, batch): idx
                 for idx, batch in enumerate(batches)

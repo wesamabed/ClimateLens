@@ -2,18 +2,18 @@
 from pathlib import Path
 from typing import List, Iterable, Optional
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from etl.downloader.protocols import Downloader, ArchiveExtractor
 from etl.config import ETLConfig
-from etl.downloader.protocols import Downloader
-from etl.downloader.tar_extractor import TarExtractor
 from etl.pipeline.protocols import Step
 
-class DownloadStep(Step[None, List[Path]]):
+class DownloadStep(Step[Iterable[int], List[Path]]):
     def __init__(
         self,
         config: ETLConfig,
         downloader: Downloader,
-        extractor: TarExtractor,
+        extractor: ArchiveExtractor,
         logger: logging.Logger,
     ):
         self.config     = config
@@ -31,18 +31,27 @@ class DownloadStep(Step[None, List[Path]]):
         raw_dir = self.config.DATA_DIR / "raw"
         raw_dir.mkdir(parents=True, exist_ok=True)
 
-        tar_paths = self.downloader.download_years(
+        archives = self.downloader.download_years(
             years=years,
             dest_dir=raw_dir,
-            max_workers=self.config.FTP_MAX_WORKERS,
+            max_workers=self.config.DOWNLOAD_MAX_WORKERS,
         )
-
-        all_op: List[Path] = []
-        for tar in tar_paths:
-            year_str = tar.stem.split("_", 1)[1]
-            year_dir = self.config.DATA_DIR / year_str
-            op_files = self.extractor.extract_op_gz(tar, year_dir)
-            all_op.extend(op_files)
-
-        self.logger.info(f"DownloadStep: {len(all_op)} files ready")
-        return all_op
+        all_csv: List[Path] = []
+        with ThreadPoolExecutor(
+            max_workers=self.config.DOWNLOAD_MAX_WORKERS,
+            thread_name_prefix="tar-extract"
+        ) as exe:
+            futures = {}
+            for arch in archives:
+                year_dir_name = Path(arch.name).name.split(".", 1)[0]
+                dest = self.config.DATA_DIR / year_dir_name
+                futures[exe.submit(self.extractor.extract, arch, dest)] = arch
+            # as each extraction finishes, collect its CSVs
+            for fut in as_completed(futures):
+                archive = futures[fut]
+                try:
+                    csvs = fut.result()
+                    all_csv.extend(csvs)
+                except Exception as e:
+                    self.logger.error(f"Extraction of {archive.name} failed: {e!r}")
+                return all_csv

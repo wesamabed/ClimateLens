@@ -1,54 +1,67 @@
+# etl/transformer/models.py
 from __future__ import annotations
-from datetime import datetime, date
+from datetime import date
 from typing import Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
-def _strip_flag(v: str) -> str:
-    # Remove any non-digit/dot (so flags like “G” get dropped)
-    return "".join(ch for ch in v if ch.isdigit() or ch in ".-")
 
 class GSODRecord(BaseModel):
-    station_id: str    = Field(alias="STN---")
-    wban:       str    = Field(alias="WBAN")
-    record_date: date  = Field(alias="YEARMODA")
+    # identifiers & metadata
+    station:    str          = Field(alias="STATION")
+    record_date: date        = Field(alias="DATE")
+    latitude:   Optional[float]        = Field(alias="LATITUDE")
+    longitude:  Optional[float]        = Field(alias="LONGITUDE")
+    elevation:  Optional[float] = Field(alias="ELEVATION")
+    name:       Optional[str]   = Field(alias="NAME")
 
-    temp_mean_c: Optional[float]  = Field(alias="TEMP_value")
-    temp_obs:    Optional[int]    = Field(alias="TEMP_obs")
-    dewp_c:      Optional[float]  = Field(alias="DEWP_value")
-    dewp_obs:    Optional[int]    = Field(alias="DEWP_obs")
+    # temperature & its quality flag
+    temp:       Optional[float] = Field(alias="TEMP")
+    temp_attr:  Optional[int]   = Field(alias="TEMP_ATTRIBUTES")
 
-    slp_mbar:    Optional[float]  = Field(alias="SLP_value")
-    slp_obs:     Optional[int]    = Field(alias="SLP_obs")
-    stp_mbar:    Optional[float]  = Field(alias="STP_value")
-    stp_obs:     Optional[int]    = Field(alias="STP_obs")
+    dewp:       Optional[float] = Field(alias="DEWP")
+    dewp_attr:  Optional[int]   = Field(alias="DEWP_ATTRIBUTES")
 
-    visib_km:    Optional[float]  = Field(alias="VISIB_value")
-    visib_obs:   Optional[int]    = Field(alias="VISIB_obs")
+    # pressures & flags
+    slp:        Optional[float] = Field(alias="SLP")
+    slp_attr:   Optional[int]   = Field(alias="SLP_ATTRIBUTES")
 
-    wdsp_ms:     Optional[float]  = Field(alias="WDSP_value")
-    wdsp_obs:    Optional[int]    = Field(alias="WDSP_obs")
+    stp:        Optional[float] = Field(alias="STP")
+    stp_attr:   Optional[int]   = Field(alias="STP_ATTRIBUTES")
 
-    mxspd_ms:    Optional[float]  = Field(alias="MXSPD")
-    gust_ms:     Optional[float]  = Field(alias="GUST")
+    # visibility & flag
+    visib:      Optional[float] = Field(alias="VISIB")
+    visib_attr: Optional[int]   = Field(alias="VISIB_ATTRIBUTES")
 
-    max_temp_c:  Optional[float]  = Field(alias="MAX")
-    min_temp_c:  Optional[float]  = Field(alias="MIN")
+    # wind speeds & flag
+    wdsp:       Optional[float] = Field(alias="WDSP")
+    wdsp_attr:  Optional[int]   = Field(alias="WDSP_ATTRIBUTES")
 
-    prcp_mm:     Optional[float]  = Field(alias="PRCP")
-    sndp_mm:     Optional[float]  = Field(alias="SNDP")
+    mxspd:      Optional[float] = Field(alias="MXSPD")
+    gust:       Optional[float] = Field(alias="GUST")
 
-    frshtt_fog:     Optional[int] = Field(alias="FRSHTT_fog")
-    frshtt_rain:    Optional[int] = Field(alias="FRSHTT_rain")
-    frshtt_snow:    Optional[int] = Field(alias="FRSHTT_snow")
-    frshtt_hail:    Optional[int] = Field(alias="FRSHTT_hail")
-    frshtt_thunder: Optional[int] = Field(alias="FRSHTT_thunder")
-    frshtt_tornado: Optional[int] = Field(alias="FRSHTT_tornado")
+    # max/min temps & flags
+    max_temp:   Optional[float] = Field(alias="MAX")
+    max_attr:   Optional[int]   = Field(alias="MAX_ATTRIBUTES")
+
+    min_temp:   Optional[float] = Field(alias="MIN")
+    min_attr:   Optional[int]   = Field(alias="MIN_ATTRIBUTES")
+
+    # precipitation & flag
+    prcp:       Optional[float] = Field(alias="PRCP")
+    prcp_attr:  Optional[str]   = Field(alias="PRCP_ATTRIBUTES")  # often a letter flag
+
+    # snow depth (no separate “attributes” column in CSV)
+    sndp:       Optional[float] = Field(alias="SNDP")
+
+    # weather‐phenomena flags: F=Fog, R=Rain, S=Snow, H=Hail, T=Thunder, T=Tornado
+    frshtt_fog:     bool
+    frshtt_rain:    bool
+    frshtt_snow:    bool
+    frshtt_hail:    bool
+    frshtt_thunder: bool
+    frshtt_tornado: bool
 
     model_config = {
         "populate_by_name": True,
         "extra": "ignore",
     }
-
-    @field_validator("record_date", mode="before")
-    def parse_date(cls, v):
-        return datetime.strptime(str(v), "%Y%m%d").date()
