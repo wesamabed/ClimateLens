@@ -50,8 +50,8 @@ class DownloadStep(Step[Iterable[int], List[Path]]):
             for fut in as_completed(futures):
                 archive = futures[fut]
                 try:
-                    csvs = fut.result()
-                    all_csv.extend(csvs)
+                    all_csv.extend(fut.result())
                 except Exception as e:
                     self.logger.error(f"Extraction of {archive.name} failed: {e!r}")
-                return all_csv
+            self.logger.info(f"DownloadStep: extracted total {len(all_csv)} CSV files")
+            return all_csv
