@@ -29,6 +29,7 @@ class ETLConfig(BaseSettings):
 
     # local storage
     DATA_DIR:    Path        = Field(default=Path("data/gsod"))
+    DATA_DIR_IPCC: Path = Field(default=Path("data/ipcc"))
     CHUNK_SIZE:  PositiveInt = Field(default=5000, ge=1)
 
     # year range flags
@@ -70,10 +71,17 @@ class ETLConfig(BaseSettings):
         le=datetime.utcnow().year,
         description="Latest CO₂ year to fetch"
     )
+    IPCC_PDF_URL: str = Field(
+        default="https://ipcc.ch/report/ar6/wg1/downloads/report/IPCC_AR6_WGI_SPM.pdf",
+        description="Download URL for the AR6 WG-I Summary-for-Policymakers PDF",
+    )
+    IPCC_PDF_NAME: str = Field(default="IPCC_AR6_WGI_SPM.pdf")
+    IPCC_CHUNK_WORDS: int = Field(default=250, ge=50, le=500)
 
     # skip flags (only via CLI, not env)
     SKIP_GSOD: bool = Field(default=False, description="If true, do not run the GSOD pipeline")
     SKIP_CO2:  bool = Field(default=False, description="If true, do not run the CO₂ pipeline")
+    SKIP_IPCC: bool = Field(default=False, description="If true, do not run the IPCC pipeline")
 
 
     @field_validator("MONGODB_URI")
@@ -96,6 +104,7 @@ def get_config(
     end_year: Optional[int] = None,
     db_name: Optional[str] = None,
     data_dir: Optional[str] = None,
+    data_dir_ipcc: Optional[str] = None,
     chunk_size: Optional[int] = None,
     download_base_url: Optional[str]       = None,
     download_retry_attempts: Optional[int] = None,
@@ -107,6 +116,10 @@ def get_config(
     co2_end_year: Optional[int] = None,
     skip_gsod: Optional[bool] = None,
     skip_co2: Optional[bool]  = None,
+    skip_ipcc: Optional[bool] = None,
+    ipcc_pdf_url: Optional[str] = None,
+    ipcc_pdf_name: Optional[str] = None,
+    ipcc_chunk_words: Optional[int] = None,
 
 ) -> ETLConfig:
     """
@@ -123,6 +136,8 @@ def get_config(
         overrides["END_YEAR"] = end_year
     if data_dir is not None:
         overrides["DATA_DIR"] = Path(data_dir)
+    if data_dir_ipcc is not None:
+        overrides["DATA_DIR_IPCC"] = Path(data_dir_ipcc)
     if chunk_size is not None:
         overrides["CHUNK_SIZE"] = chunk_size
     if download_base_url is not None:
@@ -145,6 +160,14 @@ def get_config(
         overrides["SKIP_GSOD"] = skip_gsod
     if skip_co2 is not None:
         overrides["SKIP_CO2"] = skip_co2
+    if skip_ipcc is not None:
+        overrides["SKIP_IPCC"] = skip_ipcc
+    if ipcc_pdf_url is not None:
+        overrides["IPCC_PDF_URL"] = ipcc_pdf_url
+    if ipcc_pdf_name is not None:
+        overrides["IPCC_PDF_NAME"] = ipcc_pdf_name
+    if ipcc_chunk_words is not None:    
+        overrides["IPCC_CHUNK_WORDS"] = ipcc_chunk_words
 
     env_path = os.environ.get("ETL_ENV_PATH")
     if env_path:
