@@ -1,5 +1,4 @@
 import argparse
-from typing import List
 
 from etl.config import get_config
 from etl.logger import get_logger
