@@ -22,6 +22,15 @@ from etl.transformer.co2_transformer import CO2Transformer
 from etl.pipeline.co2_transform_step import CO2TransformStep
 from etl.loader.emissions_repository import EmissionsRepository
 
+# IPCC imports
+from etl.downloader.pdf_downloader import PDFDownloader
+from etl.pipeline.ipcc_download_step import IPCCDownloadStep
+from etl.transformer.ipcc_transformer import IPCCTransformer
+from etl.pipeline.ipcc_load_step import IPCCLoadStep
+from etl.loader.reports_repository import ReportsRepository
+from etl.pipeline.ipcc_transform_step import IPCCTransformStep
+from etl.loader.IdentityPreparer import IdentityPreparer
+
 
 def parse_args():
     p = argparse.ArgumentParser("ClimateLens ETL")
@@ -32,10 +41,17 @@ def parse_args():
     p.add_argument("--co2-start-year", type=int, help="first CO₂ year to fetch")
     p.add_argument("--co2-end-year",   type=int, help="last CO₂ year to fetch")
 
+    # ipcc flags
+    p.add_argument("--skip-ipcc",  action="store_true", help="don’t run the IPCC (report) pipeline")
+    p.add_argument("--ipcc-pdf-url",   type=str, help="override IPCC PDF download URL")
+    p.add_argument("--ipcc-chunk-words", type=int, help="override max words per chunk")
+    p.add_argument("--ipcc-pdf-name", type=str, help="override IPCC PDF file name")
+
     # Common ETL flags
     p.add_argument("--uri",        type=str, help="override MONGODB_URI")
     p.add_argument("--db-name",    type=str, help="override DB_NAME")
     p.add_argument("--data-dir",   type=str, help="override local data directory")
+    p.add_argument("--data-dir-ipcc", type=str, help="override local IPCC data directory")
     p.add_argument("--chunk-size", type=int, help="override batch size for loading")
     p.add_argument("--download-base-url",       type=str, help="override GSOD download base URL")
     p.add_argument("--download-retry-attempts", type=int, help="override download retry attempts")
@@ -58,6 +74,7 @@ def main():
         uri=args.uri,
         db_name=args.db_name,
         data_dir=args.data_dir,
+        data_dir_ipcc=args.data_dir_ipcc,
         chunk_size=args.chunk_size,
         start_year=args.start_year,
         end_year=args.end_year,
@@ -70,6 +87,10 @@ def main():
         load_max_workers=args.load_max_workers,
         skip_gsod=args.skip_gsod,
         skip_co2=args.skip_co2,
+        ipcc_pdf_url=args.ipcc_pdf_url,
+        ipcc_pdf_name=args.ipcc_pdf_name,  
+        ipcc_chunk_words=args.ipcc_chunk_words,
+        skip_ipcc=args.skip_ipcc,
     )
 
     # ── GSOD pipeline ─────────────────────────────────────────────────────────────
@@ -178,8 +199,44 @@ def main():
            logger.info("CO₂ pipeline complete")
     else:
        logger.info("Skipping CO₂ pipeline")
-    logger.info("ETL run complete")
 
+    # ── IPCC pipeline ────────────────────────────────────────────────────────────────
+    if not cfg.SKIP_IPCC:
+        logger.info("→ IPCC AR6 SPM pipeline")
+    
+        pdf_downloader = PDFDownloader(
+            url=cfg.IPCC_PDF_URL,
+            dest_dir=cfg.DATA_DIR_IPCC,
+            retry_attempts=cfg.DOWNLOAD_RETRY_ATTEMPTS,
+            retry_wait=cfg.DOWNLOAD_RETRY_WAIT,
+            logger=logger,
+        )
+        ipcc_download  = IPCCDownloadStep(cfg, pdf_downloader, logger)
+    
+        ipcc_transformer = IPCCTransformer(logger)
+        ipcc_transform   = IPCCTransformStep(cfg, ipcc_transformer, logger)   # re-use generic transform step pattern
+    
+        ipcc_steps = [ipcc_download, ipcc_transform]
+    
+        if not args.dry_run:
+            reports_repo = ReportsRepository(cfg, logger)
+            preparer = IdentityPreparer(logger)
+            batch_loader = BatchLoader(
+                preparer=preparer,         
+                repository=reports_repo,
+                batch_size=cfg.CHUNK_SIZE,
+                max_workers=cfg.LOAD_MAX_WORKERS,
+                logger=logger,
+            )
+            ipcc_steps.append(IPCCLoadStep(cfg, batch_loader, logger))
+    
+        logger.info("Starting IPCC pipeline")
+        Pipeline(ipcc_steps).run()
+        logger.info("IPCC pipeline complete")
+    else:
+        logger.info("Skipping IPCC pipeline")
+
+    logger.info("ETL run complete")
 
 if __name__ == "__main__":
     main()
