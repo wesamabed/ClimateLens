@@ -53,6 +53,28 @@ class ETLConfig(BaseSettings):
     # LOADER SETTINGS
     LOAD_MAX_WORKERS: PositiveInt = Field(default=4, ge=1, description="Max threads for DB load")
 
+    # CO₂-pipeline settings
+    CO2_INDICATOR:    str = Field(
+        default="EN.GHG.CO2.MT.CE.AR5",
+        description="World Bank indicator code for CO₂ emissions"
+    )
+    CO2_START_YEAR:   int = Field(
+        default=1960,
+        ge=1900,
+        le=datetime.utcnow().year,
+        description="Earliest CO₂ year to fetch"
+    )
+    CO2_END_YEAR:     int = Field(
+        default_factory=lambda: datetime.utcnow().year,
+        ge=1960,
+        le=datetime.utcnow().year,
+        description="Latest CO₂ year to fetch"
+    )
+
+    # skip flags (only via CLI, not env)
+    SKIP_GSOD: bool = Field(default=False, description="If true, do not run the GSOD pipeline")
+    SKIP_CO2:  bool = Field(default=False, description="If true, do not run the CO₂ pipeline")
+
 
     @field_validator("MONGODB_URI")
     def validate_uri(cls, v):
@@ -80,6 +102,11 @@ def get_config(
     download_retry_wait: Optional[int] = None,
     download_max_workers: Optional[int] = None,
     load_max_workers: Optional[int] = None,
+    co2_indicator: Optional[str] = None,
+    co2_start_year: Optional[int] = None,
+    co2_end_year: Optional[int] = None,
+    skip_gsod: Optional[bool] = None,
+    skip_co2: Optional[bool]  = None,
 
 ) -> ETLConfig:
     """
@@ -108,6 +135,16 @@ def get_config(
         overrides["DOWNLOAD_MAX_WORKERS"] = download_max_workers
     if load_max_workers is not None:
         overrides["LOAD_MAX_WORKERS"] = load_max_workers
+    if co2_indicator is not None:
+        overrides["CO2_INDICATOR"] = co2_indicator
+    if co2_start_year is not None:
+        overrides["CO2_START_YEAR"] = co2_start_year
+    if co2_end_year is not None:
+        overrides["CO2_END_YEAR"] = co2_end_year
+    if skip_gsod is not None:
+        overrides["SKIP_GSOD"] = skip_gsod
+    if skip_co2 is not None:
+        overrides["SKIP_CO2"] = skip_co2
 
     env_path = os.environ.get("ETL_ENV_PATH")
     if env_path:
