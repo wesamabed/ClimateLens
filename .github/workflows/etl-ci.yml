@@ -51,4 +51,8 @@ jobs:
             --uri mongodb://dry-run-placeholder \
             --db-name test_db \
             --start-year 2010 \
-            --end-year 2010 
+            --end-year 2010 \
+            --skip-co2 \
+            --skip-ipcc \
+            --skip-embed
+

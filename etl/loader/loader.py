@@ -3,7 +3,7 @@
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Iterable, Mapping, Any
+from typing import Iterable, Mapping, Any, Optional as optional
 
 from .protocols import Loader, RecordPreparer, Repository
 
@@ -22,6 +22,7 @@ class BatchLoader(Loader):
         batch_size: int,
         max_workers: int,
         logger: logging.Logger,
+        insert_fn: optional[callable] = None,
         retry_attempts: int = 3,
         retry_wait: int = 5,
     ):
@@ -30,6 +31,7 @@ class BatchLoader(Loader):
         self.batch_size    = batch_size
         self.max_workers   = max_workers
         self.logger        = logger.getChild(self.__class__.__name__)
+        self._insert_fn    = insert_fn or repository.bulk_insert
         self.retry_attempts= retry_attempts
         self.retry_wait    = retry_wait
 
@@ -62,7 +64,7 @@ class BatchLoader(Loader):
         while True:
             try:
                 docs = [ self.preparer.prepare(r) for r in batch ]
-                self.repository.bulk_insert(docs)
+                self._insert_fn(docs)
                 return
             except Exception as e:
                 attempts += 1
