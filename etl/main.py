@@ -31,6 +31,13 @@ from etl.loader.reports_repository import ReportsRepository
 from etl.pipeline.ipcc_transform_step import IPCCTransformStep
 from etl.loader.IdentityPreparer import IdentityPreparer
 
+# Embedding imports
+from etl.embed.vertex_client import VertexEmbeddingClient
+from etl.embed.pipeline_steps import EmbedStep
+from etl.embed.pipeline_steps import IndexStep
+from etl.pipeline.ipcc_load_step import IPCCLoadStep
+from etl.embed.generator import EmbeddingGenerator
+
 
 def parse_args():
     p = argparse.ArgumentParser("ClimateLens ETL")
@@ -62,6 +69,13 @@ def parse_args():
     p.add_argument("--dry-run",    action="store_true", help="skip any DB writes")
     p.add_argument("--skip-gsod",  action="store_true", help="don’t run the GSOD pipeline")
     p.add_argument("--skip-co2",   action="store_true", help="don’t run the CO₂ pipeline")
+    p.add_argument("--skip-embed", action="store_true")
+    p.add_argument("--embed-batch-size", type=int)
+    p.add_argument("--vertex-project", type=str)
+    p.add_argument("--vertex-region", type=str)
+    p.add_argument("--vertex-model", type=str)
+    p.add_argument("--reindex", action="store_true")
+
     return p.parse_args()
 
 
@@ -91,6 +105,12 @@ def main():
         ipcc_pdf_name=args.ipcc_pdf_name,  
         ipcc_chunk_words=args.ipcc_chunk_words,
         skip_ipcc=args.skip_ipcc,
+        skip_embed=args.skip_embed,
+        embed_batch_size=args.embed_batch_size,
+        vertex_project=args.vertex_project,
+        vertex_region=args.vertex_region,
+        vertex_model=args.vertex_model,
+        reindex=args.reindex,
     )
 
     # ── GSOD pipeline ─────────────────────────────────────────────────────────────
@@ -236,6 +256,70 @@ def main():
     else:
         logger.info("Skipping IPCC pipeline")
 
+    # ── EMBED pipeline ─────────────────────────────────────────────
+    if cfg.SKIP_EMBED and not args.reindex:
+        logger.info("Skipping Embedding pipeline (SKIP_EMBED=true and --reindex not requested)")
+    else:
+        logger.info("→ Embedding pipeline")
+
+        # 1. Pull paragraphs without embedding
+        repo = ReportsRepository(cfg, logger)
+        todo = list(repo.col.find({"embedding": {"$exists": False}}, {"_id": 0, "section": 1, "paragraph": 1, "text": 1}))
+        steps: list = []
+
+        # ── (A) embed if needed ────────────────────────────────────
+        if not cfg.SKIP_EMBED and todo:
+            logger.info(f"{len(todo)} paragraphs need embeddings")
+            client = VertexEmbeddingClient(
+                project=cfg.VERTEX_PROJECT,
+                region=cfg.VERTEX_REGION,
+                model_name=cfg.VERTEX_MODEL,
+                logger=logger,
+            )
+            generator  = EmbeddingGenerator(client, cfg.EMBED_BATCH_SIZE, logger)
+            steps.append(EmbedStep(cfg, generator, logger))
+
+            if not args.dry_run:
+                steps.append(
+                    LoadStep(
+                        cfg,
+                        BatchLoader(
+                            preparer=IdentityPreparer(logger),
+                            repository=repo,
+                            batch_size=cfg.CHUNK_SIZE,
+                            max_workers=cfg.LOAD_MAX_WORKERS,
+                            logger=logger,
+                            insert_fn=repo.bulk_upsert_embeddings,
+                        ),
+                        logger,
+                    )
+                )
+        elif cfg.SKIP_EMBED:
+            logger.info("SKIP_EMBED=true → skipping new embeddings")
+        else:
+            logger.info("All paragraphs already embedded.")
+
+        # ── (B) always rebuild indexes when --reindex is given ─────
+        if args.reindex:
+            if not cfg.ATLAS_PROJECT_ID:
+                logger.warning("--reindex ignored → Atlas API keys not configured")
+            else:
+                from etl.embed.atlas_index import AtlasIndexBuilder
+                builder = AtlasIndexBuilder(
+                    proj_id=cfg.ATLAS_PROJECT_ID,
+                    cluster=cfg.ATLAS_CLUSTER,
+                    public_key=cfg.ATLAS_PUBLIC_KEY,
+                    private_key=cfg.ATLAS_PRIVATE_KEY,
+                    logger=logger,
+                )
+                steps.append(IndexStep(builder, logger))
+
+        # run the mini-pipeline only if we actually have work to do
+        if steps:
+            Pipeline(steps).run(initial_input=todo)
+        else:
+            logger.info("Nothing to embed or index – skipping Embedding pipeline")
+    
     logger.info("ETL run complete")
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ import logging
 from typing import Any, Dict, List
 
 from pymongo import MongoClient, UpdateOne
+import pymongo
 from pymongo.errors import OperationFailure
 
 from etl.config import ETLConfig
@@ -55,4 +56,25 @@ class ReportsRepository:
             result.upserted_count,
             result.matched_count,
             result.modified_count,
+        )
+
+    def bulk_upsert_embeddings(self, docs: List[Dict[str, Any]]) -> None:
+        """
+        Upsert {section, paragraph} and add / update 'embedding'.
+        """
+        if not docs:
+            return
+
+        ops = [
+            pymongo.UpdateOne(
+                {"section": d["section"], "paragraph": d["paragraph"]},
+                {"$set": {"embedding": d["embedding"]}},
+                upsert=False,   # assume base doc exists – skip silently otherwise
+            )
+            for d in docs
+        ]
+        res = self.col.bulk_write(ops, ordered=False)
+        self.logger.info(
+            f"Embeddings upserted: matched={res.matched_count} "
+            f"modified={res.modified_count}"
         )

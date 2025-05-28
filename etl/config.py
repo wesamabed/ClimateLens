@@ -77,11 +77,31 @@ class ETLConfig(BaseSettings):
     )
     IPCC_PDF_NAME: str = Field(default="IPCC_AR6_WGI_SPM.pdf")
     IPCC_CHUNK_WORDS: int = Field(default=250, ge=50, le=500)
+    EMBED_BATCH_SIZE: PositiveInt = Field(default=1, ge=1)
+    VERTEX_PROJECT: Optional[str] = None
+    VERTEX_REGION: Optional[str] = "us-central1"
+    VERTEX_MODEL: str = "gemini-embedding-001"
+    # ... plus Atlas admin creds if you’ll automate index:
+    ATLAS_PROJECT_ID: Optional[str] = None
+    ATLAS_CLUSTER: Optional[str] = None
+    ATLAS_PUBLIC_KEY: Optional[str] = None
+    ATLAS_PRIVATE_KEY: Optional[str] = None
+    REINDEX: bool = Field(
+        default=False,
+        description="If true, reindex the MongoDB collection. "
+                    "Use with caution, as it will drop existing indexes."
+    )
+    
 
     # skip flags (only via CLI, not env)
     SKIP_GSOD: bool = Field(default=False, description="If true, do not run the GSOD pipeline")
     SKIP_CO2:  bool = Field(default=False, description="If true, do not run the CO₂ pipeline")
     SKIP_IPCC: bool = Field(default=False, description="If true, do not run the IPCC pipeline")
+    SKIP_EMBED: bool = Field(
+        default=False,
+        description="If true, skip the embedding step. "
+                    "Useful for debugging or if you want to run the pipeline without embeddings."
+    )
 
 
     @field_validator("MONGODB_URI")
@@ -117,9 +137,19 @@ def get_config(
     skip_gsod: Optional[bool] = None,
     skip_co2: Optional[bool]  = None,
     skip_ipcc: Optional[bool] = None,
+    skip_embed: Optional[bool] = None,
     ipcc_pdf_url: Optional[str] = None,
     ipcc_pdf_name: Optional[str] = None,
     ipcc_chunk_words: Optional[int] = None,
+    embed_batch_size: Optional[int] = None,
+    vertex_project: Optional[str] = None,
+    vertex_region: Optional[str] = None,
+    vertex_model: Optional[str] = None,
+    atlas_project_id: Optional[str] = None,
+    atlas_cluster: Optional[str] = None,
+    atlas_public_key: Optional[str] = None,
+    atlas_private_key: Optional[str] = None,
+    reindex: Optional[bool] = None
 
 ) -> ETLConfig:
     """
@@ -162,12 +192,32 @@ def get_config(
         overrides["SKIP_CO2"] = skip_co2
     if skip_ipcc is not None:
         overrides["SKIP_IPCC"] = skip_ipcc
+    if skip_embed is not None:
+        overrides["SKIP_EMBED"] = skip_embed
     if ipcc_pdf_url is not None:
         overrides["IPCC_PDF_URL"] = ipcc_pdf_url
     if ipcc_pdf_name is not None:
         overrides["IPCC_PDF_NAME"] = ipcc_pdf_name
     if ipcc_chunk_words is not None:    
         overrides["IPCC_CHUNK_WORDS"] = ipcc_chunk_words
+    if embed_batch_size is not None:
+        overrides["EMBED_BATCH_SIZE"] = embed_batch_size        
+    if vertex_project is not None:
+        overrides["VERTEX_PROJECT"] = vertex_project
+    if vertex_region is not None:
+        overrides["VERTEX_REGION"] = vertex_region
+    if vertex_model is not None:
+        overrides["VERTEX_MODEL"] = vertex_model
+    if atlas_project_id is not None:
+        overrides["ATLAS_PROJECT_ID"] = atlas_project_id
+    if atlas_cluster is not None:
+        overrides["ATLAS_CLUSTER"] = atlas_cluster
+    if atlas_public_key is not None:    
+        overrides["ATLAS_PUBLIC_KEY"] = atlas_public_key
+    if atlas_private_key is not None:
+        overrides["ATLAS_PRIVATE_KEY"] = atlas_private_key
+    if reindex is not None:
+        overrides["REINDEX"] = reindex 
 
     env_path = os.environ.get("ETL_ENV_PATH")
     if env_path:

@@ -15,6 +15,9 @@ typer>=0.10.0,<1                  # CLI framework
 mongomock>=4.3.0,<5               # MongoDB mock for testing
 urllib3<2.0                       # HTTP client dependency
 pdfminer.six>=20221105            # PDF parsing
+google-cloud-aiplatform>=1.94.0   # Google AI Platform client
+tenacity>=8.2.2,<9                # Retry logic for downloads
+vertexai>=1.71.1                  # Vertex AI client
 
 
 
