@@ -5,7 +5,7 @@ exists on climate.reports.embedding (HNSW, cosine).
 """
 
 from __future__ import annotations
-import json, logging
+import logging
 from typing import Optional
 import requests
 from requests.auth import HTTPDigestAuth

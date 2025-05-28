@@ -35,7 +35,6 @@ from etl.loader.IdentityPreparer import IdentityPreparer
 from etl.embed.vertex_client import VertexEmbeddingClient
 from etl.embed.pipeline_steps import EmbedStep
 from etl.embed.pipeline_steps import IndexStep
-from etl.pipeline.ipcc_load_step import IPCCLoadStep
 from etl.embed.generator import EmbeddingGenerator
 
 

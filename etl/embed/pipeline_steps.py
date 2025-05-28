@@ -6,8 +6,6 @@ from typing import Iterable, List, Mapping, Any, Optional
 from etl.pipeline.protocols import Step
 from etl.config import ETLConfig
 from etl.embed.generator import EmbeddingGenerator
-from etl.loader.loader import Loader
-
 
 class EmbedStep(Step[Iterable[Mapping[str, Any]], List[Mapping[str, Any]]]):
     """Wraps the EmbeddingGenerator so it fits our Pipeline chain."""
