@@ -3,6 +3,8 @@ import argparse
 from etl.config import get_config
 from etl.logger import get_logger
 from etl.pipeline.pipeline import Pipeline
+from etl.embed.text_index import AtlasTextIndexBuilder
+
 
 # GSOD imports
 from etl.downloader.http_downloader import HTTPDownloader
@@ -304,14 +306,30 @@ def main():
                 logger.warning("--reindex ignored → Atlas API keys not configured")
             else:
                 from etl.embed.atlas_index import AtlasIndexBuilder
-                builder = AtlasIndexBuilder(
+                vector_builder = AtlasIndexBuilder(
                     proj_id=cfg.ATLAS_PROJECT_ID,
                     cluster=cfg.ATLAS_CLUSTER,
                     public_key=cfg.ATLAS_PUBLIC_KEY,
                     private_key=cfg.ATLAS_PRIVATE_KEY,
                     logger=logger,
                 )
-                steps.append(IndexStep(builder, logger))
+                steps.append(IndexStep(vector_builder, logger))
+                # 2) Full‐text index on reports.text
+                text_builder = AtlasTextIndexBuilder(
+                    mongo_uri   = cfg.MONGODB_URI,
+                    proj_id     = cfg.ATLAS_PROJECT_ID,
+                    cluster     = cfg.ATLAS_CLUSTER,
+                    public_key  = cfg.ATLAS_PUBLIC_KEY,
+                    private_key = cfg.ATLAS_PRIVATE_KEY,
+                    db_name     = cfg.DB_NAME,
+                    coll_name   = "reports",
+                    logger      = logger,
+                )
+                text_builder._ensure_text_index()
+
+                # 3) Geospatial index on weather.location
+                weather_repo = MongoRepository(cfg, logger)
+                weather_repo.ensure_geo_index()
 
         # run the mini-pipeline only if we actually have work to do
         if steps:
