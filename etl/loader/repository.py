@@ -41,3 +41,12 @@ class MongoRepository:
                 self.logger.warning(f"Skipped {len(dups)} duplicates.")
             if others:
                 self.logger.error(f"{len(others)} non-duplicate errors: {others}")
+
+    def ensure_geo_index(self) -> None:
+        """Idempotently create a 2dsphere index on `location`."""
+        self.logger.info("Ensuring 2dsphere geo‐index on weather.location")
+        self._col.create_index(
+            [("location", "2dsphere")],
+            name="location_2dsphere",
+            background=True,
+        )

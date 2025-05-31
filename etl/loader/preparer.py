@@ -16,4 +16,9 @@ class DefaultRecordPreparer:
         if "record_date" in rec and isinstance(rec["record_date"], date):
             dt = rec.pop("record_date")
             rec["recordDate"] = datetime.combine(dt, time.min)
+        lat = rec.pop("latitude", None)
+        lon = rec.pop("longitude", None)
+        if lat is not None and lon is not None:
+            # MongoDB expects [longitude, latitude]
+            rec["location"] = {"type": "Point", "coordinates": [lon, lat]}
         return rec
