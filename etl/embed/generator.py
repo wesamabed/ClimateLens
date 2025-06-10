@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 
 from etl.transformer.protocols import Transformer
 from .vertex_client import VertexEmbeddingClient
@@ -18,7 +18,7 @@ class EmbeddingGenerator(Transformer):
         self,
         client: VertexEmbeddingClient,
         batch_size: int = 1,
-        logger: logging.Logger | None = None,
+        logger: Optional[logging.Logger] = None,
     ) -> None:
         self.client = client
         self.batch_size = max(1, batch_size)

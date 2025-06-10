@@ -38,6 +38,7 @@ from etl.embed.vertex_client import VertexEmbeddingClient
 from etl.embed.pipeline_steps import EmbedStep
 from etl.embed.pipeline_steps import IndexStep
 from etl.embed.generator import EmbeddingGenerator
+from etl.embed.index_creator import IndexCreator
 
 
 def parse_args():
@@ -173,7 +174,7 @@ def main():
     if not cfg.SKIP_CO2:
        # pick the years
        all_co2_years = list(range(cfg.CO2_START_YEAR, cfg.CO2_END_YEAR + 1))
-       logger.info(f"→ CO₂ pipeline: years {all_co2_years}")
+       logger.info(f"CO₂ pipeline: years {all_co2_years}")
 
        # skip any already in Mongo
        if not args.dry_run:
@@ -223,7 +224,7 @@ def main():
 
     # ── IPCC pipeline ────────────────────────────────────────────────────────────────
     if not cfg.SKIP_IPCC:
-        logger.info("→ IPCC AR6 SPM pipeline")
+        logger.info("IPCC AR6 SPM pipeline")
     
         pdf_downloader = PDFDownloader(
             url=cfg.IPCC_PDF_URL,
@@ -261,7 +262,7 @@ def main():
     if cfg.SKIP_EMBED and not args.reindex:
         logger.info("Skipping Embedding pipeline (SKIP_EMBED=true and --reindex not requested)")
     else:
-        logger.info("→ Embedding pipeline")
+        logger.info("Embedding pipeline")
 
         # 1. Pull paragraphs without embedding
         repo = ReportsRepository(cfg, logger)
@@ -305,6 +306,9 @@ def main():
             if not cfg.ATLAS_PROJECT_ID:
                 logger.warning("--reindex ignored → Atlas API keys not configured")
             else:
+                # 1) Ensure synonyms collection is populated
+                from etl.embed.synonyms_loader import SynonymsLoader
+                SynonymsLoader(cfg, logger).load()
                 from etl.embed.atlas_index import AtlasIndexBuilder
                 vector_builder = AtlasIndexBuilder(
                     proj_id=cfg.ATLAS_PROJECT_ID,
@@ -326,6 +330,22 @@ def main():
                     logger      = logger,
                 )
                 text_builder._ensure_text_index()
+
+                creator = IndexCreator(
+                mongodb_uri=cfg.MONGODB_URI,
+                atlas_project_id=cfg.ATLAS_PROJECT_ID,
+                atlas_cluster=cfg.ATLAS_CLUSTER,
+                atlas_public_key=cfg.ATLAS_PUBLIC_KEY,
+                atlas_private_key=cfg.ATLAS_PRIVATE_KEY,
+                db_name=cfg.DB_NAME,
+                synonyms_coll="synonyms",
+                logger=logger
+                )
+                 # 1) Create B-tree indexes
+                creator.create_btree_indexes()
+                # 2) Create Atlas Search & Vector indexes
+                creator.ensure_atlas_search_indexes()
+                logger.info("All index creation steps completed.")
 
                 # 3) Geospatial index on weather.location
                 weather_repo = MongoRepository(cfg, logger)

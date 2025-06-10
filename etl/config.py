@@ -102,7 +102,7 @@ class ETLConfig(BaseSettings):
         description="If true, skip the embedding step. "
                     "Useful for debugging or if you want to run the pipeline without embeddings."
     )
-
+    SYNONYMS_COLL: str = Field(default="synonyms", env="SYNONYMS_COLL")
 
     @field_validator("MONGODB_URI")
     def validate_uri(cls, v):
