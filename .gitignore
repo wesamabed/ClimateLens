@@ -99,3 +99,21 @@ pids/
 
 # Ruff cache
 .ruff_cache/
+
+# ignore compiled server artifacts
+server/dist/
+
+# ignore client build & deps (if you ever build in-repo)
+client/dist/
+client/node_modules/
+
+# ignore any local OpenStreetMap/Google key files
+*.json
+# ➜ but be careful: this also ignores package.json!
+# so if you only want to ignore your own credentials put:
+# climatelens-etl-sa.json
+# *.pem
+
+# optional: lockfiles for pnpm or yarn
+.pnpm-debug.log*
+.yarnrc.yml
