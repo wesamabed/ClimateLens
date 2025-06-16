@@ -1,31 +1,31 @@
 import { MongoClient, Db } from 'mongodb';
 import { config } from '../../core/config.factory';
 import { logger } from '../../core/logger.adapter';
-import { ENV } from '../../core/environments';
 
-/** Singleton providing a pooled Mongo client */
 class MongoSingleton {
-  private static _i: MongoSingleton;
+  private static _instance: MongoSingleton;
   private client!: MongoClient;
   private db!: Db;
-
-  private constructor() {} // prevent external instantiation
-
+  private constructor() {}
   static get instance() {
-    if (!this._i) this._i = new MongoSingleton();
-    return this._i;
+    if (!this._instance) this._instance = new MongoSingleton();
+    return this._instance;
   }
 
   async connect(): Promise<Db> {
     if (this.db) return this.db;
-
     this.client = new MongoClient(config.MONGODB_URI, {
-      maxPoolSize: config.NODE_ENV === ENV.Production ? 100 : 20,
-      minPoolSize: 2,
       serverSelectionTimeoutMS: 5_000,
+      connectTimeoutMS:      5_000,
+      maxPoolSize: 20,
+      minPoolSize: 2,
     });
-
-    await this.client.connect();
+    try {
+      await this.client.connect();
+    } catch (err) {
+      logger.error('Mongo connection failed', err);
+      throw err;
+    }
     this.db = this.client.db(config.DB_NAME);
     logger.info('Mongo connected', { db: config.DB_NAME });
     return this.db;

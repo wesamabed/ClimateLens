@@ -3,22 +3,33 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint .",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "\"npm:build",
-    "tsc":   "tsc -p tsconfig.json"
+    "dev": "cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only src/bootstrap.ts",
+    "lint": "eslint . --ext .ts",
+    "test": "cross-env NODE_ENV=test jest --runInBand",
+    "build": "tsc -p tsconfig.json",
+    "tsc": "tsc -p tsconfig.json",
+    "test:watch": "jest --watch"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@types/express": "^5.0.1",
+    "@types/express": "^5.0.3",
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.15.18",
+    "jest": "^30.0.0",
+    "ts-jest": "^29.4.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "mongodb": "^6.16.0"
+    "@google-cloud/vertexai": "^1.10.0",
+    "@langchain/core": "^0.3.58",
+    "express": "^5.1.0",
+    "ioredis": "^5.6.1",
+    "mongodb": "^6.16.0",
+    "node-fetch": "^3.3.2",
+    "zod": "^3.25.63"
   }
 }

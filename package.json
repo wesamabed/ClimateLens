@@ -10,8 +10,9 @@
     "client:start": "npm run dev --prefix client",
     "build": "npm run build --prefix server && npm run build --prefix client",
     "lint": "eslint \"{server,client}/**/*.{ts,tsx,js,cjs,mjs}\" --max-warnings=0",
-    "tsc": "tsc --noEmit"
-  },
+    "tsc": "tsc --noEmit",
+    "test": "npm run test --workspace=server",
+    "test:watch": "npm run test --workspace=server -- --watch"  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wesamabed/ClimateLens.git"
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@types/compression": "^1.7.5",
     "@types/cors": "^2.8.18",
+    "@types/jest": "^29.5.14",
     "@types/morgan": "^1.9.9",
     "@types/pino": "^7.0.4",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
@@ -45,6 +47,9 @@
     "prettier": "^3.5.3"
   },
   "dependencies": {
+    "@google-cloud/aiplatform": "^4.2.0",
+    "@google/genai": "^1.5.1",
+    "@lifeomic/attempt": "^3.1.0",
     "@types/helmet": "^0.0.48",
     "compression": "^1.8.0",
     "dotenv": "^16.5.0",

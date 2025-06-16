@@ -1,23 +1,27 @@
-import express, { Express } from 'express';
+import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
+
 import { config } from '../../core/config.factory';
-import { logger } from '../../core/logger.adapter';
-import { mongoSingleton } from '../../infrastructure/database/mongo.singleton';
-import { healthRouter } from './routes/health.router';
-import { rootRouter } from './routes/root.router';
 import { ENV } from '../../core/environments';
 
-export async function buildExpressApp(): Promise<Express> {
-  await mongoSingleton.connect(); // fail fast if DB down
-  const app = express();
+import { mongoSingleton } from '../../infrastructure/database/mongo.singleton';
 
-  /* generic middleware */
+import { errorHandler } from './middleware/errorHandler';
+
+import { rootRouter } from './routes/root.router';
+import { healthRouter } from './routes/health.router';
+import { askRouter } from './routes/ask.router';
+
+export async function buildExpressApp() {
+  await mongoSingleton.connect();
+
+  const app = express();
   app.use(helmet());
-  app.use(cors({ origin: '*', optionsSuccessStatus: 204 }));
+  app.use(cors({ origin: '*' }));
   app.use(compression());
   app.use(express.json({ limit: '1mb' }));
   app.use(
@@ -29,15 +33,8 @@ export async function buildExpressApp(): Promise<Express> {
   );
   if (config.NODE_ENV !== ENV.Production) app.use(morgan('dev'));
 
-  /* route composition (SRP) */
-  app.use(healthRouter);
-  app.use(rootRouter);
-
-  /* central error handler placeholder */
-  app.use((err: unknown, _req: any, res: any, _next: any) => {
-    logger.error('Unhandled error', err);
-    res.status(500).json({ error: 'Internal Server Error' });
-  });
+  app.use(healthRouter, rootRouter, askRouter);
+  app.use(errorHandler);
 
   return app;
 }
