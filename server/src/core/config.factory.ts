@@ -16,7 +16,7 @@ const Schema = z.object({
   DB_NAME:     z.string().default('climate'),
   PORT:        z
     .string()
-    .default('3000')
+    .default(process.env.PORT || '3000')
     .transform(Number)
     .refine((n) => n > 0 && Number.isFinite(n), 'PORT must be positive'),
   NODE_ENV:    z.enum([ENV.Development, ENV.Production, ENV.Test]).default(

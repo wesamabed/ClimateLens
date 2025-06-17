@@ -1,26 +1,31 @@
-# server/Dockerfile
+# Use a slim Node.js image for smaller size
+FROM node:20-alpine AS build
 
+# Install dependencies for building
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Copy source and build TypeScript
+COPY src/ ./src
+RUN npm run build # This will run your "tsc -p tsconfig.json" script
+
+# --- Production Stage ---
 FROM node:20-alpine
-
-# install ts-runtime tools
-RUN npm install -g ts-node ts-node-dev typescript
 
 WORKDIR /app
 
-# copy only the two files that drive install
-COPY package.json package-lock.json* ./
+# Copy only production dependencies and compiled code from the build stage
+COPY --from=build /app/package.json /app/package-lock.json* ./
+RUN npm install --omit=dev # Install only production dependencies
 
-# install *everything* (dev + prod) so your tests & ts-node-dev still work
-RUN npm install
+COPY --from=build /app/dist ./dist # Copy the compiled JavaScript
 
-# bring in your source
-COPY src/ ./src
-
-# remove any stray .env
+# Remove any stray .env (good practice, as env vars are set by Cloud Run)
 RUN rm -f .env
 
-# expose your port
+# Expose the port your application listens on
 EXPOSE 3000
 
-# start the server with your existing ts-node-dev bootstrap command
-CMD ["ts-node-dev", "--respawn", "--transpile-only", "src/bootstrap.ts"]
+# Start the server using the compiled JavaScript
+CMD ["node", "dist/bootstrap.js"]
