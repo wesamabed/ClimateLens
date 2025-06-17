@@ -1,9 +1,7 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ],
+  // inherit whatever your app‐build config already has
+  "extends": "./tsconfig.app.json",
+
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
@@ -16,4 +14,14 @@
     "noUnusedLocals": false,
     "strictNullChecks": false
   },
+
+  // make sure ESLint’s parser can see every TS/TSX you actually write:
+  "include": [
+    "src/**/*",
+    "vite-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

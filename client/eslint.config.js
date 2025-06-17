@@ -10,7 +10,7 @@ export default tseslint.config(
     parser: tseslint.parser,
     parserOptions: {
       // point at your new lint tsconfig
-      project: ['./client/tsconfig.eslint.json'],
+      project: ['./client/tsconfig.json'],
       // ensure paths resolve relative to repo root
       tsconfigRootDir: new URL('.', import.meta.url).pathname,
       ecmaVersion: 2020,
