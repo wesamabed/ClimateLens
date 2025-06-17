@@ -1,0 +1,19 @@
+# Start fresh (don’t inherit .gitignore)
+# You can still ignore what you like—but we must include our manifests.
+
+# Ignore build outputs and deps
+node_modules/
+server/dist/
+client/node_modules/
+client/dist/
+data
+*.md
+etl
+
+# But explicitly include the things we need:
+!Dockerfile
+!package.json
+!package-lock.json
+!server/package.json
+!server/tsconfig.json
+!server/src/**
