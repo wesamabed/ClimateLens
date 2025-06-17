@@ -1,31 +1,31 @@
-# Use a slim Node.js image for smaller size
-FROM node:20-alpine AS build
+# server/Dockerfile
 
-# Install dependencies for building
-WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm install
-
-# Copy source and build TypeScript
-COPY src/ ./src
-RUN npm run build # This will run your "tsc -p tsconfig.json" script
-
-# --- Production Stage ---
-FROM node:20-alpine
-
+#### 1. build stage ####
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy only production dependencies and compiled code from the build stage
-COPY --from=build /app/package.json /app/package-lock.json* ./
-RUN npm install --omit=dev # Install only production dependencies
+# only copy lockfile + manifest, install ALL deps for build/test
+COPY package.json package-lock.json ./
+RUN npm ci
 
-COPY --from=build /app/dist ./dist # Copy the compiled JavaScript
+# copy all source & compile to dist/
+COPY tsconfig.json ./
+COPY src ./src
+RUN npm run build     # produces ./dist
 
-# Remove any stray .env (good practice, as env vars are set by Cloud Run)
-RUN rm -f .env
+#### 2. runtime stage ####
+FROM node:20-alpine AS runtime
+WORKDIR /app
 
-# Expose the port your application listens on
-EXPOSE 3000
+# copy only production deps, then drop devDeps
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
-# Start the server using the compiled JavaScript
+# copy compiled output
+COPY --from=builder /app/dist ./dist
+
+# tell Cloud Run the PORT is injected in env
+ENV NODE_ENV=production
+
+# run the compiled JS
 CMD ["node", "dist/bootstrap.js"]
