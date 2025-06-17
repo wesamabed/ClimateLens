@@ -1,119 +1,94 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# Node.js / JavaScript
-# ─────────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
+# Node.js deps & lockfiles
+# ──────────────────────────────────────────────────────────────
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
+server/node_modules/
+client/node_modules/
 
-# coverage & instrumentation
-coverage/
-*.lcov
-.nyc_output/
-lib-cov/
+# We DO want to keep our lockfiles for reproducible builds:
+!server/package-lock.json
+!client/package-lock.json
 
-# bundlers & caches
+# ──────────────────────────────────────────────────────────────
+# Build outputs & caches
+# ──────────────────────────────────────────────────────────────
+# TypeScript
+**/*.tsbuildinfo
+
+# Server
+server/dist/
+server/coverage/
+
+# Client
+client/dist/
+client/coverage/
+
+# Vite / bundlers
 .cache/
 .parcel-cache/
-.rpt2_cache/
 .rts2_cache_*
 .web_modules/
-.jspm_packages/
-.fusebox/
-.serverless/
 
-# build outputs
-dist/
+# Misc build
 out/
-build/Release/
+build/
 
-# misc JS & tooling
-bower_components/
-.lock-wscript
-*.tsbuildinfo
+# ──────────────────────────────────────────────────────────────
+# Env & credentials
+# ──────────────────────────────────────────────────────────────
+# Local env files & overrides
+.env
+.env.local
+.env.*.local
+# (but keep your examples)
+!*.example
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Python / ETL
-# ─────────────────────────────────────────────────────────────────────────────
-# Byte-compiled / caches
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
+# If you have Google/AWS/etc creds in JSON form, only ignore them explicitly:
+# e.g. climatelens-etl-sa.json, my-key.json
+# *.json   <-- DO NOT do this, it would ignore package.json!
 
-# Virtualenvs
-.venv/
-env/
-venv/
-
-# pytest / coverage
-.pytest_cache/
-*.pytest_cache/
-htmlcov/
-.coverage
-.coverage.*
-
-# Ruff
-__pypackages__/
-
-# ETL data outputs
+# ──────────────────────────────────────────────────────────────
+# ETL / data output
+# ──────────────────────────────────────────────────────────────
 data/
 etl/data/
 
-# local environment overrides
-*.env
-etl/.env
+# ──────────────────────────────────────────────────────────────
+# Logs & temp
+# ──────────────────────────────────────────────────────────────
+logs/
+*.log
+tmp/
+*.tmp
 
-# ─────────────────────────────────────────────────────────────────────────────
-# OS
-# ─────────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
+# Python
+# ──────────────────────────────────────────────────────────────
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ──────────────────────────────────────────────────────────────
+# OS & Editor files
+# ──────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Editors & IDEs
-# ─────────────────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.sublime-*
 *.sw?
-*~ 
+*~
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Logs
-# ─────────────────────────────────────────────────────────────────────────────
-logs/
-*.log
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Misc
-# ─────────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
+# Other misc
+# ──────────────────────────────────────────────────────────────
 report.*.json
 pids/
 *.pid
 *.seed
 *.pid.lock
-
-# Ruff cache
 .ruff_cache/
-
-# ignore compiled server artifacts
-server/dist/
-
-# ignore client build & deps (if you ever build in-repo)
-client/dist/
-client/node_modules/
-
-# ignore any local OpenStreetMap/Google key files
-*.json
-# ➜ but be careful: this also ignores package.json!
-# so if you only want to ignore your own credentials put:
-# climatelens-etl-sa.json
-# *.pem
-
-# optional: lockfiles for pnpm or yarn
-.pnpm-debug.log*
-.yarnrc.yml
