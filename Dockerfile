@@ -17,7 +17,7 @@ WORKDIR /app
 COPY server ./server
 
 # build just the server workspace
-RUN npm run build --workspace=server
+RUN npm run build --prefix server
 
 # 3) runtime stage: install only server’s prod deps + copy in dist
 FROM node:20-alpine AS runtime
@@ -35,8 +35,8 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/server/dist ./dist
 
 # runtime config
-ENV NODE_ENV=production PORT=3000
-EXPOSE 3000
+ENV NODE_ENV=production PORT=8080
+EXPOSE 8080
 
 # launch
 CMD ["node", "dist/bootstrap.js"]
