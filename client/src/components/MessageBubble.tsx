@@ -37,7 +37,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               <BlockMath math={mathContent} />
             </div>
           );
-        } catch (error) {
+        } catch {
           return (
             <span key={blockIndex} className={styles.mathError}>
               [Math Error: {mathContent}]
@@ -59,7 +59,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                 math={mathContent}
               />
             );
-          } catch (error) {
+          } catch {
             return (
               <span
                 key={`${blockIndex}-${inlineIndex}`}

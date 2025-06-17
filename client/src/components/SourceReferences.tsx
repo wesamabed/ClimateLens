@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { IconButton, Collapse } from "@mui/material";
-import { ExpandMore, ExpandLess, Link as LinkIcon } from "@mui/icons-material";
+import { ExpandMore, Link as LinkIcon } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { Source } from "../api/client";
 import styles from "./SourceReferences.module.css";

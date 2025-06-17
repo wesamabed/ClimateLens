@@ -1,6 +1,6 @@
 import React from "react";
 import { IconButton, Tooltip } from "@mui/material";
-import { LightMode, DarkMode, Clear, Refresh } from "@mui/icons-material";
+import { LightMode, DarkMode, Clear } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";

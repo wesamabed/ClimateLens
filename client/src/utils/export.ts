@@ -51,7 +51,7 @@ function exportAsText(
   content += `Exported: ${new Date().toLocaleString()}\n`;
   content += `Messages: ${messages.length}\n\n`;
 
-  messages.forEach((message, index) => {
+  messages.forEach((message) => {
     const role = message.role === "user" ? "You" : "ClimateLens";
     content += `${role}:\n`;
 
