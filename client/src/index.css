@@ -1,68 +1,233 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* Import KaTeX CSS for math rendering */
+@import "katex/dist/katex.min.css";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+/* Light theme variables (default) */
+:root,
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --primary-color: #059669;
+  --primary-color-alpha: rgba(5, 150, 105, 0.1);
+
+  --header-bg: rgba(255, 255, 255, 0.95);
+  --header-text: #1a1a1a;
+
+  --input-bg: rgba(255, 255, 255, 0.95);
+  --input-field-bg: #ffffff;
+
+  --user-bubble-bg: #059669;
+  --user-bubble-text: #ffffff;
+  --assistant-bubble-bg: #ffffff;
+  --assistant-bubble-text: #1a1a1a;
+
+  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
+
+  --error-bg: #fef2f2;
+  --error-border: #fca5a5;
+  --error-text: #dc2626;
+
+  --success-bg: #f0fdf4;
+  --success-border: #86efac;
+  --success-text: #16a34a;
 }
-a:hover {
-  color: #535bf2;
+
+/* Dark theme variables */
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+  --primary-color: #10b981;
+  --primary-color-alpha: rgba(16, 185, 129, 0.1);
+
+  --header-bg: rgba(15, 23, 42, 0.95);
+  --header-text: #f1f5f9;
+
+  --input-bg: rgba(15, 23, 42, 0.95);
+  --input-field-bg: #1e293b;
+
+  --user-bubble-bg: #10b981;
+  --user-bubble-text: #ffffff;
+  --assistant-bubble-bg: #1e293b;
+  --assistant-bubble-text: #f1f5f9;
+
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+
+  --error-bg: #450a0a;
+  --error-border: #dc2626;
+  --error-text: #fca5a5;
+
+  --success-bg: #052e16;
+  --success-border: #16a34a;
+  --success-text: #86efac;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.app {
   min-height: 100vh;
+  background-color: var(--bg-primary);
+  position: relative;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 6px;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
-button:hover {
-  border-color: #646cff;
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
 }
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox scrollbar */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+/* Focus styles */
+*:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
 button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+input:focus,
+textarea:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 
-@media (prefers-color-scheme: light) {
+/* Material-UI overrides for consistent theming */
+.MuiIconButton-root {
+  transition: all 0.2s ease !important;
+}
+
+.MuiIconButton-root:hover {
+  transform: scale(1.05) !important;
+}
+
+.MuiPaper-root {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.MuiMenuItem-root {
+  color: var(--text-primary) !important;
+}
+
+.MuiMenuItem-root:hover {
+  background-color: var(--primary-color-alpha) !important;
+}
+
+.MuiListItemIcon-root {
+  color: var(--text-secondary) !important;
+}
+
+.MuiAlert-root {
+  background-color: var(--error-bg) !important;
+  border: 1px solid var(--error-border) !important;
+  color: var(--error-text) !important;
+}
+
+.MuiTooltip-tooltip {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  font-size: 12px !important;
+}
+
+/* Smooth transitions for all theme-related properties */
+* {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* KaTeX styling for better theme integration */
+.katex {
+  font-size: 1em !important;
+}
+
+.katex-display {
+  margin: 0.5em 0 !important;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    --border-color: #000000;
+    --text-secondary: #333333;
   }
-  a:hover {
-    color: #747bff;
+
+  [data-theme="dark"] {
+    --border-color: #ffffff;
+    --text-secondary: #cccccc;
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+/* Print styles */
+@media print {
+  .app {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  .MuiIconButton-root {
+    display: none !important;
   }
 }
