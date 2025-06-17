@@ -7,6 +7,15 @@ import tseslint from 'typescript-eslint'
 export default tseslint.config(
   { ignores: ['dist'] },
   {
+    parser: tseslint.parser,
+    parserOptions: {
+      // point at your new lint tsconfig
+      project: ['./client/tsconfig.json'],
+      // ensure paths resolve relative to repo root
+      tsconfigRootDir: new URL('.', import.meta.url).pathname,
+      ecmaVersion: 2020,
+      sourceType: 'module',
+    },
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {

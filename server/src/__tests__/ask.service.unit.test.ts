@@ -1,7 +1,6 @@
 import { AskService, AskResult } from '../application/services/ask.service';
 import { functionHandlerService } from '../application/services/functionHandler.service';
 import { genAiClient } from '../infrastructure/ai/genai.client';
-import { FunctionResult } from '../application/services/functionHandler.service';
 
 describe('AskService (unit)', () => {
   let svc: AskService;

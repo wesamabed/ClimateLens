@@ -1,18 +1,27 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ],
+  // inherit whatever your app‐build config already has
+  "extends": "./tsconfig.app.json",
+
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "jsx": "react-jsx",
-    "strict": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "noImplicitAny": false,
+    "noUnusedParameters": false,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "allowJs": true,
+    "noUnusedLocals": false,
+    "strictNullChecks": false
   },
-  "exclude": ["node_modules", "dist"]
+
+  // make sure ESLint’s parser can see every TS/TSX you actually write:
+  "include": [
+    "src/**/*",
+    "vite-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

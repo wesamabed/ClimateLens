@@ -1,4 +1,4 @@
-import { AskService, AskResult, Source } from '../application/services/ask.service';
+import { AskService } from '../application/services/ask.service';
 import { genAiClient } from '../infrastructure/ai/genai.client';
 import { functionHandlerService, FunctionResult } from '../application/services/functionHandler.service';
 

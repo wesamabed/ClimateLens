@@ -1,0 +1,25 @@
+.exportButton {
+  color: var(--text-secondary) !important;
+  transition: all 0.2s ease !important;
+}
+
+.exportButton:hover:not(:disabled) {
+  color: var(--primary-color) !important;
+  background-color: var(--primary-color-alpha) !important;
+}
+
+.exportButton:disabled {
+  color: var(--text-secondary) !important;
+  opacity: 0.5;
+}
+
+.menuItem {
+  font-size: 14px !important;
+  padding: 8px 16px !important;
+}
+
+.menuIcon {
+  color: var(--text-secondary) !important;
+  width: 20px !important;
+  height: 20px !important;
+}
