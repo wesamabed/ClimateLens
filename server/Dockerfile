@@ -1,31 +1,30 @@
 # server/Dockerfile
 
-#### 1. build stage ####
+##### STAGE 1: build #####
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# only copy lockfile + manifest, install ALL deps for build/test
-COPY package.json package-lock.json ./
-RUN npm ci
+# copy only lockfiles and package.json so install is deterministic
+COPY package.json package-lock.json tsconfig.json ./
 
-# copy all source & compile to dist/
-COPY tsconfig.json ./
-COPY src ./src
-RUN npm run build     # produces ./dist
+# install dev+prod deps and compile
+RUN npm install
+COPY src/ ./src
+RUN npm run build              # produces dist/
 
-#### 2. runtime stage ####
-FROM node:20-alpine AS runtime
+##### STAGE 2: runtime #####
+FROM node:20-alpine
 WORKDIR /app
 
-# copy only production deps, then drop devDeps
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
-# copy compiled output
+# copy compiled output and package.json
 COPY --from=builder /app/dist ./dist
+COPY package.json ./
 
-# tell Cloud Run the PORT is injected in env
+# production environment
 ENV NODE_ENV=production
 
-# run the compiled JS
+# install only prod deps
+RUN npm install --omit=dev
+
+# Cloud Run sets $PORT for you; listen on that
 CMD ["node", "dist/bootstrap.js"]
