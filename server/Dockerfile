@@ -1,27 +1,26 @@
 # server/Dockerfile
+
 FROM node:20-alpine
 
-# 1) Install globally the TypeScript‐runtime tool we need
+# install ts-runtime tools
 RUN npm install -g ts-node ts-node-dev typescript
 
 WORKDIR /app
 
-# 2) Copy lockfile & package.json so install is reproducible
-COPY package*.json ./
+# copy only the two files that drive install
+COPY package.json package-lock.json* ./
 
-# 3) Install everything (including devDependencies)
-RUN npm ci
+# install *everything* (dev + prod) so your tests & ts-node-dev still work
+RUN npm install
 
-# 4) Copy the rest of your source
+# bring in your source
 COPY src/ ./src
 
-# 5) Ensure .env is not left behind in the image
-#    (we'll pass variables in via Cloud Run config)
+# remove any stray .env
 RUN rm -f .env
 
-# 6) Expose your port
+# expose your port
 EXPOSE 3000
 
-# 7) Start the server via ts-node-dev
-#    (matches your local `npm run dev` command)
+# start the server with your existing ts-node-dev bootstrap command
 CMD ["ts-node-dev", "--respawn", "--transpile-only", "src/bootstrap.ts"]
