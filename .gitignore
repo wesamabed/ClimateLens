@@ -92,3 +92,4 @@ pids/
 *.seed
 *.pid.lock
 .ruff_cache/
+climatelens-etl-sa.json
