@@ -27,4 +27,4 @@ jobs:
         run: npm run lint --server
 
       - name: Type-check
-        run: npm run tsc --server
+        run: npm run tsc --workspace=server
